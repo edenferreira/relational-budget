@@ -13,7 +13,9 @@
          (balances/account
           :name "my account"
           :accounts #{#::account{:name "my account"
-                                 :initial-balance 0M}})))
+                                 :initial-balance 0M}
+                      #::account{:name "my other account"
+                                 :initial-balance 100M}})))
   (is (= 10M
          (balances/account
           :name "my account"
