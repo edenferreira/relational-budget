@@ -1,70 +1,51 @@
 (ns edenferreira.orcamento.domain
   (:require [clojure.alpha.spec :as s]
-            [clojure.set :as set]
             [br.com.orcamento :as-alias orc]
             [br.com.orcamento.budget :as-alias budget]
+            [br.com.orcamento.category :as-alias category]
+            [br.com.orcamento.account :as-alias account]
             [br.com.orcamento.entry :as-alias entry]))
 
 (s/def ::budget/id uuid?)
+(s/def ::budget/name string?)
+(s/def ::budget/created-at inst?)
+
+(s/def ::orc/budget
+  (s/schema [::budget/id
+             ::budget/name
+             ::budget/created-at]))
+
+(s/def ::category/id uuid?)
+(s/def ::category/name string?)
+(s/def ::category/created-at inst?)
+(s/def ::orc/category
+  (s/schema [::category/id
+             ::category/name
+             ::category/created-at]))
+
+(s/def ::account/id uuid?)
+(s/def ::account/name string?)
+(s/def ::account/initial-balance decimal?)
+(s/def ::account/created-at inst?)
+(s/def ::orc/account
+  (s/schema [::account/id
+             ::account/name
+             ::account/created-at]))
+
 (s/def ::entry/id uuid?)
 (s/def ::entry/amount decimal?)
-(s/def ::entry/type decimal?) ;; credit out, debit in
-(s/def ::entry/account keyword?)
-(s/def ::entry/other-party keyword?)
-(s/def ::entry/budget keyword?)
-(s/def ::entry/category keyword?)
-(s/def ::entry/account keyword?)
+(s/def ::entry/type #{::entry/credit ::entry/type}) ;; credit out, debit in
+(s/def ::entry/other-party string?)
 (s/def ::entry/when inst?)
-
-(def entries
-  #{#::entry{:amount 10
-             :type :credit
-             :account :checking
-             :other-party :feira
-             :category :mercado
-             :when #inst "2000-01-01T00:00:00Z"}
-    #::entry{:amount 15
-             :type :debit
-             :account :checking
-             :other-party :empregador
-             :category :salário
-             :when #inst "2000-01-02T00:00:00Z"}
-    #::entry{:amount 2
-             :type :credit
-             :account :checking
-             :other-party :bar-da-esquina
-             :category :mercado
-             :when #inst "2000-01-02T00:00:00Z"}})
-
-(defn entries-by-attribute [x v entries]
-  (set/select
-   #(= (get % x) v)
-   entries))
-
-(defn total-for-category [category entries]
-  (reduce (fn [s {::entry/keys [amount type]}]
-            (case type
-              :credit (- s amount)
-              :debit (+ s amount)))
-          0
-          (set/project
-           (entries-by-attribute ::entry/category category entries)
-           [::entry/amount ::entry/type])))
-
+(s/def ::orc/entry
+  (s/schema [::entry/id
+             ::entry/amount
+             ::entry/type
+             ::entry/other-party
+             ::entry/when]))
 
 (comment
-
-  (entries-by-attribute ::entry/category :mercado entries)
-  (total-for-category :mercado entries)
-
-  (def a #{{:a 1 :b 2}
-           {:a 2 :b 2}
-           {:a 2 :b 3}
-           {:a 3 :b 4}})
-  (def b #{{:b 2 :d 4}
-           {:b 3 :d 5}})
-  (set
-   (for [x a
-         y b]
-     (merge x y)))
+  (require '[clojure.spec.gen.alpha :as gen])
+  (gen/generate
+   (s/gen (s/select ::orc/entry [*])))
   '_)
