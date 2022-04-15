@@ -110,7 +110,7 @@
 (deftest property-based
   (is
    (match? {:pass? true}
-           (test.check/quick-check 10 property))))
+           (test.check/quick-check 20 property))))
 
 (comment
   (gen/generate (generators/entire-setup))

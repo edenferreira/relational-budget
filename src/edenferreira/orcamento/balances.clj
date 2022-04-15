@@ -6,53 +6,35 @@
             [br.com.orcamento.entry :as-alias entry]
             [clojure.set :as set]))
 
-(defn ^:private entries-balance [entries]
-  (reduce
-   (fn [balance {::entry/keys [amount type]}]
-     (case type
-       ::entry/credit (- balance amount)
-       ::entry/debit (+ balance amount)))
-   0M
-   entries))
-
-(defn calculate
-  [& {:keys [initial-balance query-rels entries rels]
-      :or {initial-balance 0M}}]
-  (let [joined (reduce set/join entries rels)]
-    (reduce
-     (fn [balance {::entry/keys [amount type]}]
-       (case type
-         ::entry/credit (- balance amount)
-         ::entry/debit (+ balance amount)))
-     initial-balance
-     (set/join query-rels joined))))
-
-(defn account-initial-balance [accounts]
-  (reduce
-   (fn [balance {::account/keys [initial-balance]}]
-     (+ balance initial-balance))
-   0M
-   accounts))
+(defn updated-balance-from-entry
+  [balance {::entry/keys [amount type]}]
+  (case type
+    ::entry/credit (- balance amount)
+    ::entry/debit (+ balance amount)))
 
 (defn account [& {:keys [name accounts entries]}]
-  (calculate
-   :initial-balance (account-initial-balance
-                     (set/select (comp #{name} ::account/name)
-                                 accounts))
-   :query-rels #{{::account/name name}}
-   :entries entries
-   :rels [accounts]))
+  (let [accounts (set/join #{{::account/name name}} accounts)
+        initial-balance (reduce
+                         (fn [balance {::account/keys [initial-balance]}]
+                           (+ balance initial-balance))
+                         0M
+                         accounts)]
+    (reduce updated-balance-from-entry
+            initial-balance
+            (set/join #{{::account/name name}}
+                      entries))))
 
-(defn category [& {:keys [name categories entries]}]
-  (calculate
-   :query-rels #{{::category/name name}}
-   :entries entries
-   :rels [categories]))
+(defn category [& {:keys [name entries]}]
+  (reduce updated-balance-from-entry
+          0M
+          (set/join #{{::category/name name}}
+                    entries)))
 
-(defn budget [& {:keys [name budgets entries]}]
-  (calculate
-   :query-rels #{{::budget/name name}}
-   :entries entries
-   :rels [budgets]))
+(defn budget [& {:keys [name entries]}]
+  (reduce updated-balance-from-entry
+          0M
+          (set/join #{{::budget/name name}}
+                    entries)))
 
-(comment)
+(comment
+  '_)
