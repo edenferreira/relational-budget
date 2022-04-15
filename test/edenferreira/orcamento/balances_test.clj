@@ -13,7 +13,12 @@
          (balances/account
           :name "my account"
           :accounts #{#::account{:name "my account"
-                                 :initial-balance 0M}}))))
+                                 :initial-balance 0M}})))
+  (is (= 10M
+         (balances/account
+          :name "my account"
+          :accounts #{#::account{:name "my account"
+                                 :initial-balance 10M}}))))
 
 (comment
   )
