@@ -1,5 +1,6 @@
 (ns edenferreira.orcamento.generators
   (:require [clojure.set :as set]
+            [edenferreira.orcamento.domain :as domain]
             [br.com.orcamento :as-alias orc]
             [br.com.orcamento.budget :as-alias budget]
             [br.com.orcamento.category :as-alias category]
@@ -8,55 +9,118 @@
             [clojure.test.check.generators :as gen]
             [clojure.alpha.spec :as s]))
 
-(declare entries-with-accounts
-         entries-with-categories
-         entries-with-budgets
-         enties-with-X
-         accounts
-         categories
-         budgets
-         given-accounts-exist-input-db
-         given-categories-exist-input-db
-         given-budgets-exist-input-db
-         given-X-exist-input-db)
+(defn one-account []
+  (s/gen (s/select ::orc/account [*])))
 
-(defn db []
-  (gen/fmap
-   (fn [[wo-entries w-entries]]
-     (apply merge-with set/union
-            wo-entries w-entries))
-   (gen/tuple
-    (gen/hash-map
-     ::orc/categories (s/gen ::orc/categories)
-     ::orc/budgets (s/gen ::orc/budgets)
-     ::orc/accounts (s/gen ::orc/accounts))
-    (gen/vector
-     (gen/fmap
-      (fn [[entries m]]
-        (let [entries (into
-                       (empty entries)
-                       (map
-                        #(assoc %
-                                ::category/name (::category/name (::orc/category m))
-                                ::account/name (::account/name (::orc/account m))
-                                ::budget/name (::budget/name (::orc/budget m))))
-                       entries)]
-          (assoc m
-                 ::orc/entries entries
-                 ::orc/categories #{(::orc/category m)}
-                 ::orc/accounts #{(::orc/account m)}
-                 ::orc/budgets #{(::orc/budget m)})))
-      (gen/tuple
-       (s/gen ::orc/entries)
+(defn one-category []
+  (s/gen (s/select ::orc/category [*])))
+
+(defn one-budget []
+  (s/gen (s/select ::orc/budget [*])))
+
+(defn one-entry []
+  (s/gen (s/select ::orc/entry [*])))
+
+(defn many-accounts [& {:keys [min-elements
+                               max-elements]
+                        :or {min-elements 1
+                             max-elements 5}}]
+  (gen/set (one-account)
+           {:min-elements min-elements
+            :max-elements max-elements}))
+
+(defn many-categories [& {:keys [min-elements
+                                 max-elements]
+                          :or {min-elements 1
+                               max-elements 5}}]
+  (gen/set (one-category)
+           {:min-elements min-elements
+            :max-elements max-elements}))
+
+(defn many-budgets [& {:keys [min-elements
+                              max-elements]
+                       :or {min-elements 1
+                            max-elements 5}}]
+  (gen/set (one-budget)
+           {:min-elements min-elements
+            :max-elements max-elements}))
+;; TODO explain basis
+(defn many-entries [& {:keys [min-elements
+                              max-elements
+                              min-different-basis
+                              max-different-basis]
+                       :or {min-elements 3
+                            max-elements 1000
+                            min-different-basis 2
+                            max-different-basis 6}}]
+
+  (let [basis (gen/hash-map
+               ::budget/name (s/gen ::budget/name)
+               ::category/name (s/gen ::category/name)
+               ::account/name (s/gen ::account/name))]
+    (gen/fmap
+     (fn [[basis entries]]
+       (map merge entries (cycle basis)))
+     (gen/tuple
+      (gen/set basis {:min-elements min-different-basis
+                      :max-elements max-different-basis})
+      (gen/set (one-entry)
+               {:min-elements min-elements
+                :max-elements max-elements})))))
+
+(defn ^:private create-generator-from-existing-entries
+  [entity-name-attr entity-gen entries]
+  (gen/bind (gen/return (set/project entries [entity-name-attr]))
+            (fn [elements]
+              (gen/fmap set
+                        (apply gen/tuple
+                               (map (fn [a]
+                                      (gen/fmap #(merge % a)
+                                                entity-gen))
+                                    elements))))))
+
+(defn entire-setup []
+  (gen/bind
+   (many-entries)
+   (fn [entries]
+     (let [accounts (gen/fmap
+                     set/union
+                     (gen/tuple
+                      (create-generator-from-existing-entries ::account/name
+                                                              (one-account)
+                                                              entries)
+                      (many-accounts)))
+           categories (gen/fmap
+                       set/union
+                       (gen/tuple
+                        (create-generator-from-existing-entries ::category/name
+                                                                (one-category)
+                                                                entries)
+                        (many-categories)))
+           budgets (gen/fmap
+                    set/union
+                    (gen/tuple
+                     (create-generator-from-existing-entries ::budget/name
+                                                             (one-budget)
+                                                             entries)
+                     (many-budgets)))]
        (gen/hash-map
-        ::orc/category (s/gen
-                        (s/select ::orc/category
-                                  [*]))
-        ::orc/budget (s/gen
-                      (s/select ::orc/budget
-                                [*]))
-        ::orc/account (s/gen
-                       (s/select ::orc/account
-                                 [*])))))
-     2))))
+        ::orc/accounts accounts
+        ::orc/categories categories
+        ::orc/budgets budgets
+        ::orc/entries (gen/return entries))))))
 
+(comment
+  (gen/generate (entire-setup))
+
+  (let [entries (::orc/entries (gen/generate (db)))]
+    {:entries-count (count entries)
+     :accounts (set/project entries [::account/name
+                                     ::category/name
+                                     ::budget/name])})
+  (let [entries (::orc/entries (gen/generate (entire-setup)))]
+    {:entries-count (count entries)
+     :accounts (set/project entries [::account/name
+                                     ::category/name
+                                     ::budget/name])})
+  '_)

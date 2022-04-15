@@ -98,7 +98,7 @@
 
 (def property
   (prop/for-all
-   [db (generators/db)]
+   [db (generators/entire-setup)]
    (for [account (::orc/accounts db)
          :let [account-name (::account/name account)]]
      (decimal?
