@@ -33,11 +33,13 @@
        {::orc/accounts
         #{#::account{:name "account name"
                      :type ::account/checking
+                     :balance 1000M
                      :created-at #inst "2000-01-01T00:00:00Z"}}}
        (api/create-account
         {}
         :name "account name"
         :type ::account/checking
+        :initial-balance 1000M
         :as-of #inst "2000-01-01T00:00:00Z"))))
 
 (deftest add-entry

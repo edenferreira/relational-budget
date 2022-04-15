@@ -18,11 +18,12 @@
           #::category{:name name
                       :created-at as-of}))
 
-(defn create-account [db & {:keys [name type as-of]}]
+(defn create-account [db & {:keys [name type initial-balance as-of]}]
   (update db ::orc/accounts
           (fnil conj #{})
           #::account{:name name
                      :type type
+                     :balance initial-balance
                      :created-at as-of}))
 
 (defn add-entry [db
