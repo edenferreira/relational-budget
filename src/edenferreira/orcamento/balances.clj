@@ -6,7 +6,7 @@
             [br.com.orcamento.entry :as-alias entry]
             [clojure.set :as set]))
 
-(defn entries-balance [& {:keys [entries]}]
+(defn ^:private entries-balance [entries]
   (reduce
    (fn [balance {::entry/keys [amount type]}]
      (case type
@@ -20,16 +20,11 @@
       (fn [balance {::account/keys [initial-balance]}]
         (+ balance initial-balance))
       0M
-      (set/select
-       (comp #{name} ::account/name)
-       accounts))
-     (entries-balance
-      :entries (set/join accounts
-                         entries))))
+      (set/select (comp #{name} ::account/name) accounts))
+     (entries-balance (set/join accounts entries))))
 
 (defn category [& {:keys [name categories entries]}]
-  0M
-  )
+  (entries-balance (set/join categories entries)))
 
 (comment
   )

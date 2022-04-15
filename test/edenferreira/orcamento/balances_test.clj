@@ -21,6 +21,7 @@
           :name "my account"
           :accounts #{#::account{:name "my account"
                                  :initial-balance 10M}})))
+  ;; TODO test entry other category
   (is (= 0M
          (balances/account
           :name "my account"
@@ -34,7 +35,22 @@
   (is (= 0M
          (balances/category
           :name "my category"
-          :categories #{#::category{:name "my category"}}))))
+          :categories #{#::category{:name "my category"}})))
+  (is (= -100M
+         (balances/category
+          :name "my category"
+          :categories #{#::category{:name "my category"}}
+          :entries #{#::entry{::category/name "my category"
+                              :type ::entry/credit
+                              :amount 100M}})))
+(is (= 0M
+         (balances/category
+          :name "my category"
+          :categories #{#::category{:name "my category"}}
+          :entries #{#::entry{::category/name "my other category"
+                              :type ::entry/credit
+                              :amount 100M}})))
+  )
 
 (comment
   (balances/account
