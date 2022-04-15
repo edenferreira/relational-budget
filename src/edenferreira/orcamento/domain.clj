@@ -8,7 +8,7 @@
             [br.com.orcamento.entry :as-alias entry]))
 
 (s/def ::budget/id uuid?)
-(s/def ::budget/name (s/and string? (complement str/blank?)))
+(s/def ::budget/name (s/and string? #(< 0 (count %))))
 (s/def ::budget/created-at inst?)
 (s/def ::orc/budget
   (s/schema [::budget/id
@@ -19,7 +19,7 @@
              :kind set?))
 
 (s/def ::category/id uuid?)
-(s/def ::category/name (s/and string? (complement str/blank?)))
+(s/def ::category/name (s/and string? #(< 0 (count %))))
 (s/def ::category/created-at inst?)
 (s/def ::orc/category
   (s/schema [::category/id
@@ -30,7 +30,7 @@
              :kind set?))
 
 (s/def ::account/id uuid?)
-(s/def ::account/name (s/and string? (complement str/blank?)))
+(s/def ::account/name (s/and string? #(< 0 (count %))))
 (s/def ::account/initial-balance decimal?)
 (s/def ::account/created-at inst?)
 (s/def ::orc/account
@@ -45,7 +45,7 @@
 (s/def ::entry/id uuid?)
 (s/def ::entry/amount decimal?)
 (s/def ::entry/type #{::entry/credit ::entry/debit}) ;; credit out, debit in
-(s/def ::entry/other-party (s/and string? (complement str/blank?)))
+(s/def ::entry/other-party (s/and string? #(< 0 (count %))))
 (s/def ::entry/when inst?)
 (s/def ::orc/entry
   (s/schema [::entry/id

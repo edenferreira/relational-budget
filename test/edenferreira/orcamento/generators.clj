@@ -84,21 +84,21 @@
    (many-entries)
    (fn [entries]
      (let [accounts (gen/fmap
-                     set/union
+                     (partial apply set/union)
                      (gen/tuple
                       (create-generator-from-existing-entries ::account/name
                                                               (one-account)
                                                               entries)
                       (many-accounts)))
            categories (gen/fmap
-                       set/union
+                       (partial apply set/union)
                        (gen/tuple
                         (create-generator-from-existing-entries ::category/name
                                                                 (one-category)
                                                                 entries)
                         (many-categories)))
            budgets (gen/fmap
-                    set/union
+                    (partial apply set/union)
                     (gen/tuple
                      (create-generator-from-existing-entries ::budget/name
                                                              (one-budget)

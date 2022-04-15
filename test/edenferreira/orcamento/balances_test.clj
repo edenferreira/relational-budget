@@ -113,4 +113,5 @@
            (test.check/quick-check 10 property))))
 
 (comment
+  (gen/generate (generators/entire-setup))
   '_)
