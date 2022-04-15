@@ -15,25 +15,44 @@
    0M
    entries))
 
+(defn calculate
+  [& {:keys [initial-balance query-rels entries rels]
+      :or {initial-balance 0M}}]
+  (let [joined (reduce set/join entries rels)]
+    (reduce
+     (fn [balance {::entry/keys [amount type]}]
+       (case type
+         ::entry/credit (- balance amount)
+         ::entry/debit (+ balance amount)))
+     initial-balance
+     (set/join query-rels joined))))
+
+(defn account-initial-balance [accounts]
+  (reduce
+   (fn [balance {::account/keys [initial-balance]}]
+     (+ balance initial-balance))
+   0M
+   accounts))
+
 (defn account [& {:keys [name accounts entries]}]
-  (+ (reduce
-      (fn [balance {::account/keys [initial-balance]}]
-        (+ balance initial-balance))
-      0M
-      (set/select (comp #{name} ::account/name) accounts))
-     (entries-balance (set/join accounts entries))))
+  (calculate
+   :initial-balance (account-initial-balance
+                     (set/select (comp #{name} ::account/name)
+                                 accounts))
+   :query-rels #{{::account/name name}}
+   :entries entries
+   :rels [accounts]))
 
 (defn category [& {:keys [name categories entries]}]
-  (entries-balance
-   (set/join
-    (set/select (comp #{name} ::category/name) categories)
-    entries)))
+  (calculate
+   :query-rels #{{::category/name name}}
+   :entries entries
+   :rels [categories]))
 
 (defn budget [& {:keys [name budgets entries]}]
-  (entries-balance
-   (set/join
-    (set/select (comp #{name} ::budget/name) budgets)
-    entries)))
+  (calculate
+   :query-rels #{{::budget/name name}}
+   :entries entries
+   :rels [budgets]))
 
-(comment
-  )
+(comment)

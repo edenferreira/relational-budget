@@ -86,10 +86,4 @@
                               :amount 100M}}))))
 
 (comment
-  (balances/account
-   :name "my account"
-   :accounts #{#::account{:name "my account"
-                          :initial-balance 100M}}
-   :entries #{#::entry{::account/name "my account"
-                       :type ::entry/credit
-                       :amount 100M}}))
+  )
