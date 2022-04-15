@@ -14,9 +14,9 @@
         #{#::budget{:name "some budget"
                     :created-at #inst "2000-01-01T00:00:00Z"}}}
        (api/create-budget
-        "some budget"
-        #inst "2000-01-01T00:00:00Z"
-        {}))))
+        {}
+        :name "some budget"
+        :as-of #inst "2000-01-01T00:00:00Z"))))
 
 (deftest create-category
   (is (match?
@@ -24,9 +24,9 @@
         #{#::category{:name "category name"
                       :created-at #inst "2000-01-01T00:00:00Z"}}}
        (api/create-category
-        "category name"
-        #inst "2000-01-01T00:00:00Z"
-        {}))))
+        {}
+        :name "category name"
+        :as-of #inst "2000-01-01T00:00:00Z"))))
 
 (deftest create-account
   (is (match?
@@ -35,10 +35,10 @@
                      :type ::account/checking
                      :created-at #inst "2000-01-01T00:00:00Z"}}}
        (api/create-account
-        "account name"
-        ::account/checking
-        #inst "2000-01-01T00:00:00Z"
-        {}))))
+        {}
+        :name "account name"
+        :type ::account/checking
+        :as-of #inst "2000-01-01T00:00:00Z"))))
 
 (deftest add-entry
   (is (match?

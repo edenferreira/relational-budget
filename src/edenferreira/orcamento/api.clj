@@ -5,22 +5,23 @@
             [br.com.orcamento.account :as-alias account]
             [br.com.orcamento.entry :as-alias entry]))
 
-(defn create-budget [budget-name as-of db]
+(defn create-budget [db
+                     & {:keys [name as-of]}]
   (update db ::orc/budgets
           (fnil conj #{})
-          #::budget{:name budget-name
+          #::budget{:name name
                     :created-at as-of}))
 
-(defn create-category [category-name as-of db]
+(defn create-category [db & {:keys [name as-of]}]
   (update db ::orc/categories
           (fnil conj #{})
-          #::category{:name category-name
+          #::category{:name name
                       :created-at as-of}))
 
-(defn create-account [account-name type as-of db]
+(defn create-account [db & {:keys [name type as-of]}]
   (update db ::orc/accounts
           (fnil conj #{})
-          #::account{:name account-name
+          #::account{:name name
                      :type type
                      :created-at as-of}))
 
