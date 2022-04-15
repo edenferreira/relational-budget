@@ -27,5 +27,9 @@
       :entries (set/join accounts
                          entries))))
 
+(defn category [& {:keys [name categories entries]}]
+  0M
+  )
+
 (comment
   )
