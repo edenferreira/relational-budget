@@ -47,10 +47,10 @@
        #::orc{:entries #{#::entry{:type ::entry/credit
                                   :amount 100M
                                   :other-party "merchant"
-                                  :budget "name of budget"
-                                  :category "name of category"
-                                  :account "name of account"
-                                  :when #inst "2000-01-01T00:00:00Z"}}}
+                                  :when #inst "2000-01-01T00:00:00Z"
+                                  ::budget/name "name of budget"
+                                  ::category/name "name of category"
+                                  ::account/name "name of account"}}}
        (api/add-entry
         #::orc{:budgets #{#::budget{:name "name of budget"}}
                :categories #{#::category{:name "name of category"}}

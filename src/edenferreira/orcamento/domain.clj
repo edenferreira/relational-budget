@@ -8,7 +8,7 @@
 (s/def ::budget/id uuid?)
 (s/def ::entry/id uuid?)
 (s/def ::entry/amount decimal?)
-(s/def ::entry/type decimal?)
+(s/def ::entry/type decimal?) ;; credit out, debit in
 (s/def ::entry/account keyword?)
 (s/def ::entry/other-party keyword?)
 (s/def ::entry/budget keyword?)

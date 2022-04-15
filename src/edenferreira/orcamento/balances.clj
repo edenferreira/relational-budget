@@ -14,3 +14,6 @@
     (fn [{account-name ::account/name}]
       (= account-name name))
     accounts)))
+
+(comment
+  )

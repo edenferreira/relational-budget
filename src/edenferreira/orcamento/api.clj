@@ -39,7 +39,7 @@
           #::entry{:type type
                    :amount amount
                    :other-party other-party
-                   :budget budget
-                   :category category
-                   :account account
-                   :when as-of}))
+                   :when as-of
+                   ::budget/name budget
+                   ::category/name category
+                   ::account/name account}))

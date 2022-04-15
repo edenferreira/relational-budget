@@ -45,10 +45,10 @@
                  #{#::entry{:type ::entry/credit
                             :amount 10.50M
                             :other-party nil
-                            :budget "my budget"
-                            :category "groceries"
-                            :account "banbank"
-                            :when as-of}}})
+                            :when as-of
+                            ::budget/name "my budget"
+                            ::category/name "groceries"
+                            ::account/name "banbank"}}})
          db))))
 
 (comment
