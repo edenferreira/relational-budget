@@ -39,7 +39,7 @@
                  :accounts
                  #{#::account{:name "banbank"
                               :type ::account/checking
-                              :balance 100M
+                              :initial-balance 100M
                               :created-at as-of}}
                  :entries
                  #{#::entry{:type ::entry/credit

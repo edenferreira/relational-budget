@@ -23,7 +23,7 @@
           (fnil conj #{})
           #::account{:name name
                      :type type
-                     :balance initial-balance
+                     :initial-balance initial-balance
                      :created-at as-of}))
 
 (defn add-entry [db
