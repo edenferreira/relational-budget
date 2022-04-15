@@ -51,7 +51,10 @@
              ::entry/amount
              ::entry/type
              ::entry/other-party
-             ::entry/when]))
+             ::entry/when
+             ::account/name
+             ::category/name
+             ::budget/name]))
 (s/def ::orc/entries
   (s/coll-of (s/select ::orc/entry [*])
              :kind set?))
