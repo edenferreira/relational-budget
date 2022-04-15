@@ -3,7 +3,8 @@
         org.clojure/spec.alpha {:mvn/version "0.3.214"}
         metosin/spec-tools {:mvn/version "0.10.5"}
         org.clojure/alpha.spec {:git/url "https://github.com/clojure/spec-alpha2.git"
-                                :sha "99456b1856a6fd934e2c30b17920bd790dd81775"}}
+                                :sha "99456b1856a6fd934e2c30b17920bd790dd81775"}
+        nubank/matcher-combinators {:mvn/version "3.3.1"}}
  :aliases
  {:run-m {:main-opts ["-m" "edenferreira.orcamento"]}
   :run-x {:ns-default edenferreira.orcamento
