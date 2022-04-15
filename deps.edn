@@ -3,22 +3,19 @@
         org.clojure/spec.alpha {:mvn/version "0.3.214"}
         metosin/spec-tools {:mvn/version "0.10.5"}
         org.clojure/alpha.spec {:git/url "https://github.com/clojure/spec-alpha2.git"
-                                :sha "99456b1856a6fd934e2c30b17920bd790dd81775"}
-        nubank/matcher-combinators {:mvn/version "3.3.1"}
-        org.clojure/test.check {:mvn/version "1.1.0"}}
+                                :sha "99456b1856a6fd934e2c30b17920bd790dd81775"}}
  :aliases
  {:run-m {:main-opts ["-m" "edenferreira.orcamento"]}
   :run-x {:ns-default edenferreira.orcamento
           :exec-fn greet
           :exec-args {:name "Clojure"}}
+  :dev {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}
+                     nubank/matcher-combinators {:mvn/version "3.3.1"}
+                     org.clojure/test.check {:mvn/version "1.1.0"}}}
   :test {:extra-paths ["test"]
-         :extra-deps {org.clojure/test.check {:mvn/version "1.1.0"}}}
-  :runner
-  {:extra-deps {com.cognitect/test-runner
-                {:git/url "https://github.com/cognitect-labs/test-runner"
-                 :sha "b6b3193fcc42659d7e46ecd1884a228993441182"}}
-   :main-opts ["-m" "cognitect.test-runner"
-               "-d" "test"]}
+         :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}
+                     nubank/matcher-combinators {:mvn/version "3.3.1"}
+                     org.clojure/test.check {:mvn/version "1.1.0"}}}
   :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.193"}}
             :exec-fn hf.depstar/uberjar
             :exec-args {:aot true

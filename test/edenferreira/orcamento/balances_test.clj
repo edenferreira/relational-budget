@@ -1,6 +1,7 @@
 (ns edenferreira.orcamento.balances-test
   (:require [clojure.test :refer [deftest testing is]]
             [edenferreira.orcamento.generators :as generators]
+            [edenferreira.orcamento.domain :as domain]
             [br.com.orcamento :as-alias orc]
             [br.com.orcamento.budget :as-alias budget]
             [br.com.orcamento.category :as-alias category]

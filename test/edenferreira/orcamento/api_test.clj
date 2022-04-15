@@ -1,5 +1,6 @@
 (ns edenferreira.orcamento.api-test
   (:require [clojure.test :refer [deftest testing is]]
+            [edenferreira.orcamento.domain :as domain]
             [br.com.orcamento :as-alias orc]
             [br.com.orcamento.budget :as-alias budget]
             [br.com.orcamento.category :as-alias category]
