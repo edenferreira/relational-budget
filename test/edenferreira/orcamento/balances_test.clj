@@ -9,11 +9,8 @@
             [br.com.orcamento.entry :as-alias entry]
             [edenferreira.orcamento.balances :as balances]
             [clojure.test.check :as test.check]
-            [clojure.test.check.generators :as gen]
             [clojure.test.check.properties :as prop]
-            [matcher-combinators.test :refer [match?]]
-            [clojure.alpha.spec :as s]
-            [clojure.set :as set]))
+            [matcher-combinators.test :refer [match?]]))
 
 (deftest account-balance
   (is (= 0M
