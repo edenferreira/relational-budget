@@ -24,7 +24,10 @@
      (entries-balance (set/join accounts entries))))
 
 (defn category [& {:keys [name categories entries]}]
-  (entries-balance (set/join categories entries)))
+  (entries-balance
+   (set/join
+    (set/select (comp #{name} ::category/name) categories)
+    entries)))
 
 (comment
   )

@@ -43,14 +43,20 @@
           :entries #{#::entry{::category/name "my category"
                               :type ::entry/credit
                               :amount 100M}})))
-(is (= 0M
+  (is (= 0M
          (balances/category
           :name "my category"
           :categories #{#::category{:name "my category"}}
           :entries #{#::entry{::category/name "my other category"
                               :type ::entry/credit
                               :amount 100M}})))
-  )
+  (is (= 0M
+         (balances/category
+          :name "my category"
+          :categories #{#::category{:name "my other category"}}
+          :entries #{#::entry{::category/name "my other category"
+                              :type ::entry/credit
+                              :amount 100M}}))))
 
 (comment
   (balances/account
