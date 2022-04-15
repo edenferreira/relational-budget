@@ -58,6 +58,33 @@
                               :type ::entry/credit
                               :amount 100M}}))))
 
+(deftest budget-balance
+  (is (= 0M
+         (balances/budget
+          :name "my budget"
+          :budgets #{#::budget{:name "my budget"}})))
+  (is (= 100M
+         (balances/budget
+          :name "my budget"
+          :budgets #{#::budget{:name "my budget"}}
+          :entries #{#::entry{::budget/name "my budget"
+                              :type ::entry/debit
+                              :amount 100M}})))
+  (is (= 0M
+         (balances/budget
+          :name "my budget"
+          :budgets #{#::budget{:name "my budget"}}
+          :entries #{#::entry{::budget/name "my other budget"
+                              :type ::entry/credit
+                              :amount 100M}})))
+  (is (= 0M
+         (balances/budget
+          :name "my budget"
+          :budgets #{#::budget{:name "my other budget"}}
+          :entries #{#::entry{::budget/name "my other budget"
+                              :type ::entry/credit
+                              :amount 100M}}))))
+
 (comment
   (balances/account
    :name "my account"

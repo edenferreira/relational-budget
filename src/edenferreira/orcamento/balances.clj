@@ -29,5 +29,11 @@
     (set/select (comp #{name} ::category/name) categories)
     entries)))
 
+(defn budget [& {:keys [name budgets entries]}]
+  (entries-balance
+   (set/join
+    (set/select (comp #{name} ::budget/name) budgets)
+    entries)))
+
 (comment
   )
