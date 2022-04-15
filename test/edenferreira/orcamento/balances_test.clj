@@ -1,12 +1,18 @@
 (ns edenferreira.orcamento.balances-test
   (:require [clojure.test :refer [deftest testing is]]
+            [edenferreira.orcamento.generators :as generators]
             [br.com.orcamento :as-alias orc]
             [br.com.orcamento.budget :as-alias budget]
             [br.com.orcamento.category :as-alias category]
             [br.com.orcamento.account :as-alias account]
             [br.com.orcamento.entry :as-alias entry]
             [edenferreira.orcamento.balances :as balances]
-            [matcher-combinators.test :refer [match?]]))
+            [clojure.test.check :as test.check]
+            [clojure.test.check.generators :as gen]
+            [clojure.test.check.properties :as prop]
+            [matcher-combinators.test :refer [match?]]
+            [clojure.alpha.spec :as s]
+            [clojure.set :as set]))
 
 (deftest account-balance
   (is (= 0M
@@ -85,5 +91,25 @@
                               :type ::entry/credit
                               :amount 100M}}))))
 
+(declare account-balance-prop
+         category-balance-prop
+         budget-balance-prop)
+
+(def property
+  (prop/for-all
+   [db (generators/db)]
+   (for [account (::orc/accounts db)
+         :let [account-name (::account/name account)]]
+     (decimal?
+      (balances/account
+       :name account-name
+       :accounts (::orc/accounts db)
+       :entries (::orc/entries db))))))
+
+(deftest property-based
+  (is
+   (match? {:pass? true}
+           (test.check/quick-check 10 property))))
+
 (comment
-  )
+  '_)
