@@ -24,4 +24,20 @@
                      :type type
                      :created-at as-of}))
 
-(defn add-entry [])
+(defn add-entry [db
+                 & {:keys [type
+                           amount
+                           other-party
+                           budget
+                           category
+                           account
+                           as-of]}]
+  (update db ::orc/entries
+          (fnil conj #{})
+          #::entry{:type type
+                   :amount amount
+                   :other-party other-party
+                   :budget budget
+                   :category category
+                   :account account
+                   :when as-of}))

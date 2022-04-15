@@ -11,7 +11,9 @@
 (s/def ::entry/type decimal?)
 (s/def ::entry/account keyword?)
 (s/def ::entry/other-party keyword?)
+(s/def ::entry/budget keyword?)
 (s/def ::entry/category keyword?)
+(s/def ::entry/account keyword?)
 (s/def ::entry/when inst?)
 
 (def entries
