@@ -1,5 +1,6 @@
 (ns edenferreira.orcamento.main
-  (:require [br.com.orcamento :as-alias orc]
+  (:require [edenferreira.orcamento.integrity :as integrity]
+            [br.com.orcamento :as-alias orc]
             [br.com.orcamento.budget :as-alias budget]
             [br.com.orcamento.category :as-alias category]
             [br.com.orcamento.account :as-alias account]
@@ -8,6 +9,15 @@
 
 (defonce db
   (atom {}))
+
+;; The db is def only once but the validator
+;; is always set again to allow for fater
+;; feedback cycles
+(set-validator! db
+                (every-pred
+                 integrity/entry-must-have-existing-account
+                 integrity/entry-must-have-existing-category
+                 integrity/entry-must-have-existing-budget))
 
 (defn create-budget [& {:as m}]
   (swap! db api/create-budget m))
