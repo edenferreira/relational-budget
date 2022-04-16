@@ -8,3 +8,5 @@
 - [x] names should not be empty
 - [] generator of basis should have more cross polinization
 - [] generator for entire-setup should have input for max elements for every step
+- [] add type to accounts
+- [] integrity checkers
