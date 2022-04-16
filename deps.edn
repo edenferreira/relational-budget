@@ -3,7 +3,16 @@
         org.clojure/spec.alpha {:mvn/version "0.3.214"}
         metosin/spec-tools {:mvn/version "0.10.5"}
         org.clojure/alpha.spec {:git/url "https://github.com/clojure/spec-alpha2.git"
-                                :sha "99456b1856a6fd934e2c30b17920bd790dd81775"}}
+                                :sha "99456b1856a6fd934e2c30b17920bd790dd81775"}
+        io.pedestal/pedestal.service {:mvn/version "0.5.7"}
+        io.pedestal/pedestal.route {:mvn/version "0.5.7"}
+        io.pedestal/pedestal.jetty {:mvn/version "0.5.7"}
+
+        org.clojure/data.json {:mvn/version "0.2.6"}
+        hiccup/hiccup {:mvn/version "1.0.5"}
+
+        org.slf4j/slf4j-simple {:mvn/version "1.7.28"}}
+
  :aliases
  {:run-m {:main-opts ["-m" "edenferreira.orcamento"]}
   :run-x {:ns-default edenferreira.orcamento
@@ -15,8 +24,8 @@
         :extra-paths ["test"]}
   :test {:extra-paths ["test"]
          :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}
-                     nubank/matcher-combinators {:mvn/version "3.3.1"}
-                     org.clojure/test.check {:mvn/version "1.1.0"}}}
+                      nubank/matcher-combinators {:mvn/version "3.3.1"}
+                      org.clojure/test.check {:mvn/version "1.1.0"}}}
   :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.193"}}
             :exec-fn hf.depstar/uberjar
             :exec-args {:aot true

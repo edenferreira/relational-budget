@@ -32,7 +32,6 @@
   (swap! db api/add-entry m))
 
 (comment
-  ()
   (swap! db empty)
   (create-budget
    :name "some budget"

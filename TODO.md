@@ -11,3 +11,4 @@
 - [] add type to accounts
 - [x] integrity checkers
 - [] test integrity checkers
+- [x] hiccup server start
