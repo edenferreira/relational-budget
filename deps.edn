@@ -11,7 +11,8 @@
           :exec-args {:name "Clojure"}}
   :dev {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}
                      nubank/matcher-combinators {:mvn/version "3.3.1"}
-                     org.clojure/test.check {:mvn/version "1.1.0"}}}
+                     org.clojure/test.check {:mvn/version "1.1.0"}}
+        :extra-paths ["test"]}
   :test {:extra-paths ["test"]
          :extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}
                      nubank/matcher-combinators {:mvn/version "3.3.1"}

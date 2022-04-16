@@ -21,6 +21,9 @@
 (defn one-entry []
   (s/gen (s/select ::orc/entry [*])))
 
+(defn one-entry-with-specific-type [type]
+  (gen/fmap #(assoc % ::entry/type type) (one-entry)))
+
 (defn many-accounts [& {:keys [min-elements
                                max-elements]
                         :or {min-elements 1
@@ -44,6 +47,7 @@
   (gen/set (one-budget)
            {:min-elements min-elements
             :max-elements max-elements}))
+
 ;; TODO explain basis
 (defn many-entries [& {:keys [min-elements
                               max-elements
@@ -78,6 +82,11 @@
                                       (gen/fmap #(merge % a)
                                                 entity-gen))
                                     elements))))))
+
+(defn many-accounts-from-entries [entries]
+  (create-generator-from-existing-entries ::account/name
+                                          (one-account)
+                                          entries))
 
 (defn entire-setup []
   (gen/bind

@@ -2,10 +2,15 @@
   (:require [clojure.alpha.spec :as s]
             [clojure.string :as str]
             [br.com.orcamento :as-alias orc]
+            [clojure.test.check.generators :as gen]
+            [br.com.orcamento.general-sspec :as-alias orc.general]
             [br.com.orcamento.budget :as-alias budget]
             [br.com.orcamento.category :as-alias category]
             [br.com.orcamento.account :as-alias account]
             [br.com.orcamento.entry :as-alias entry]))
+
+(def positive-big-decimal-generator
+  (gen/fmap (comp bigdec abs) gen/int))
 
 (s/def ::budget/id uuid?)
 (s/def ::budget/name (s/and string? #(< 0 (count %))))
@@ -31,7 +36,9 @@
 
 (s/def ::account/id uuid?)
 (s/def ::account/name (s/and string? #(< 0 (count %))))
-(s/def ::account/initial-balance decimal?)
+(s/def ::account/initial-balance
+  (s/with-gen (s/and decimal? pos?)
+    (constantly positive-big-decimal-generator)))
 (s/def ::account/created-at inst?)
 (s/def ::orc/account
   (s/schema [::account/id
@@ -43,7 +50,9 @@
              :kind set?))
 
 (s/def ::entry/id uuid?)
-(s/def ::entry/amount decimal?)
+(s/def ::entry/amount
+  (s/with-gen (s/and decimal? pos?)
+    (constantly positive-big-decimal-generator)))
 (s/def ::entry/type #{::entry/credit ::entry/debit}) ;; credit out, debit in
 (s/def ::entry/other-party (s/and string? #(< 0 (count %))))
 (s/def ::entry/when inst?)

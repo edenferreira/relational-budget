@@ -89,26 +89,5 @@
                               :type ::entry/credit
                               :amount 100M}}))))
 
-(declare account-balance-prop
-         category-balance-prop
-         budget-balance-prop)
-
-(def property
-  (prop/for-all
-   [db (generators/entire-setup)]
-   (for [account (::orc/accounts db)
-         :let [account-name (::account/name account)]]
-     (decimal?
-      (balances/account
-       :name account-name
-       :accounts (::orc/accounts db)
-       :entries (::orc/entries db))))))
-
-(deftest property-based
-  (is
-   (match? {:pass? true}
-           (test.check/quick-check 20 property))))
-
 (comment
-  (gen/generate (generators/entire-setup))
   '_)
