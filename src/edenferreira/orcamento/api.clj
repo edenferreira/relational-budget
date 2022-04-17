@@ -6,40 +6,47 @@
             [br.com.orcamento.entry :as-alias entry]))
 
 (defn create-budget [db
-                     & {:keys [name as-of]}]
-  (update db ::orc/budgets
-          (fnil conj #{})
-          #::budget{:name name
-                    :created-at as-of}))
+                     & {:keys [id name as-of]}]
+  (let [budget #::budget{:id id
+                         :name name
+                         :created-at as-of}]
+    (-> db
+        (update ::orc/budgets (fnil conj #{}) budget))))
 
-(defn create-category [db & {:keys [name as-of]}]
-  (update db ::orc/categories
-          (fnil conj #{})
-          #::category{:name name
-                      :created-at as-of}))
+(defn create-category [db & {:keys [id name as-of]}]
+  (let [category
+        #::category{:id id
+                    :name name
+                    :created-at as-of}]
+    (-> db
+        (update ::orc/categories (fnil conj #{}) category))))
 
-(defn create-account [db & {:keys [name type initial-balance as-of]}]
-  (update db ::orc/accounts
-          (fnil conj #{})
-          #::account{:name name
-                     :type type
-                     :initial-balance initial-balance
-                     :created-at as-of}))
+(defn create-account [db & {:keys [id name type initial-balance as-of]}]
+  (let [account
+        #::account{:id id
+                   :name name
+                   :type type
+                   :initial-balance initial-balance
+                   :created-at as-of}]
+    (-> db
+        (update ::orc/accounts (fnil conj #{}) account))))
 
 (defn add-entry [db
-                 & {:keys [type
+                 & {:keys [id
+                           type
                            amount
                            other-party
                            budget
                            category
                            account
                            as-of]}]
-  (update db ::orc/entries
-          (fnil conj #{})
-          #::entry{:type type
-                   :amount amount
-                   :other-party other-party
-                   :when as-of
-                   ::budget/name budget
-                   ::category/name category
-                   ::account/name account}))
+  (let [entry #::entry{:id id
+                       :type type
+                       :amount amount
+                       :other-party other-party
+                       :when as-of
+                       ::budget/name budget
+                       ::category/name category
+                       ::account/name account}]
+    (-> db
+        (update ::orc/entries (fnil conj #{}) entry))))

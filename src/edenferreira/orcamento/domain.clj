@@ -1,6 +1,5 @@
 (ns edenferreira.orcamento.domain
   (:require [clojure.alpha.spec :as s]
-            [clojure.string :as str]
             [br.com.orcamento :as-alias orc]
             [clojure.test.check.generators :as gen]
             [br.com.orcamento.general-sspec :as-alias orc.general]

@@ -7,13 +7,15 @@
             [br.com.orcamento.account :as-alias account]
             [br.com.orcamento.entry :as-alias entry]
             [edenferreira.orcamento.api :as api]
-            [matcher-combinators.test :refer [match?]]))
+            [matcher-combinators.test :refer [match?]]
+            [matcher-combinators.matchers :as m]))
 
 (deftest create-budget
   (is (match?
-       {::orc/budgets
-        #{#::budget{:name "some budget"
-                    :created-at #inst "2000-01-01T00:00:00Z"}}}
+       (m/match-with [m/equals]
+                     (let [budget #::budget{:name "some budget"
+                                            :created-at #inst "2000-01-01T00:00:00Z"}]
+                       #::orc{:budgets #{budget}}))
        (api/create-budget
         {}
         :name "some budget"
@@ -21,9 +23,9 @@
 
 (deftest create-category
   (is (match?
-       {::orc/categories
-        #{#::category{:name "category name"
-                      :created-at #inst "2000-01-01T00:00:00Z"}}}
+       (let [category #::category{:name "category name"
+                                  :created-at #inst "2000-01-01T00:00:00Z"}]
+         #::orc{:categories #{category}})
        (api/create-category
         {}
         :name "category name"
@@ -31,11 +33,12 @@
 
 (deftest create-account
   (is (match?
-       {::orc/accounts
-        #{#::account{:name "account name"
-                     :type ::account/checking
-                     :initial-balance 1000M
-                     :created-at #inst "2000-01-01T00:00:00Z"}}}
+       (m/match-with [m/equals]
+                     (let [account #::account{:name "account name"
+                                              :type ::account/checking
+                                              :initial-balance 1000M
+                                              :created-at #inst "2000-01-01T00:00:00Z"}]
+                       #::orc{:accounts #{account}}))
        (api/create-account
         {}
         :name "account name"
@@ -45,13 +48,15 @@
 
 (deftest add-entry
   (is (match?
-       #::orc{:entries #{#::entry{:type ::entry/credit
-                                  :amount 100M
-                                  :other-party "merchant"
-                                  :when #inst "2000-01-01T00:00:00Z"
-                                  ::budget/name "name of budget"
-                                  ::category/name "name of category"
-                                  ::account/name "name of account"}}}
+       (m/match-with [m/equals]
+                     (let [entry #::entry{:type ::entry/credit
+                                          :amount 100M
+                                          :other-party "merchant"
+                                          :when #inst "2000-01-01T00:00:00Z"
+                                          ::budget/name "name of budget"
+                                          ::category/name "name of category"
+                                          ::account/name "name of account"}]
+                       #::orc{:entries #{entry}}))
        (api/add-entry
         #::orc{:budgets #{#::budget{:name "name of budget"}}
                :categories #{#::category{:name "name of category"}}
@@ -66,5 +71,4 @@
 
 
 (comment
-  (edev/e-la-vamos-nos)
-  )
+  (edev/e-la-vamos-nos))

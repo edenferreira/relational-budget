@@ -32,8 +32,10 @@
     :handler (make-handler-catch-invalid-state main/create-budget)}
    {:name :account
     :attributes {:name {:type "text"}
+                 :type {:type "select"
+                        :options ["checking" "savings"]}
                  :initial-balance {:type "number"}}
-    :adapter (fn [{:keys [name initial-balance]}]
+    :adapter (fn [{:keys [name type initial-balance]}]
                {:id (random-uuid)
                 :name name
                 :initial-balance (or initial-balance 0M)

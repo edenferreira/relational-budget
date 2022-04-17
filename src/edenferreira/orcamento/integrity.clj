@@ -30,6 +30,18 @@
         (set/project entries [::budget/name])
         (set/project budgets [::budget/name])))))
 
+(defn budget-name-must-be-unique
+  [& {::orc/keys [budgets]}]
+  (> 2 (count (set/project budgets [::budget/id ::budget/name]))))
+
+(defn category-name-must-be-unique
+  [& {::orc/keys [categories]}]
+  (> 2 (count (set/project categories [::category/id ::category/name]))))
+
+(defn account-name-must-be-unique
+  [& {::orc/keys [accounts]}]
+  (> 2 (count (set/project accounts [::account/id ::account/name]))))
+
 (comment
   (entry-must-have-existing-account
    ::orc/accounts #{{::account/name "aabc"}}

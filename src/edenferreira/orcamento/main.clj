@@ -17,7 +17,10 @@
                 (every-pred
                  integrity/entry-must-have-existing-account
                  integrity/entry-must-have-existing-category
-                 integrity/entry-must-have-existing-budget))
+                 integrity/entry-must-have-existing-budget
+                 integrity/budget-name-must-be-unique
+                 integrity/category-name-must-be-unique
+                 integrity/account-name-must-be-unique))
 
 (defn create-budget [& {:as m}]
   (swap! db api/create-budget m))
