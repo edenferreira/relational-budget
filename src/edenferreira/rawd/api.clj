@@ -98,21 +98,27 @@
     (fn respond-index [request]
       {:status 200 :body (index request)})))
 
-(defn respond-create-entity [entity adapter]
+(defn respond-create-entity [entity adapter handler]
   (fn create-entity [request]
-    {:status 200
-     :body (assoc (adapter (update-keys (:params request)
-                                        #(keyword (str/replace % (str (name entity) "-") ""))))
-                  ::entity entity)}))
+    (let [adapted (adapter (update-keys
+                            (:params request)
+                            #(keyword (str/replace %
+                                                   (str (name entity) "-")
+                                                   ""))))
+          handled (handler adapted)]
+      (or handled
+          {:status 200
+           :body "no return"}))))
 
 (defn entities->routes [interceptors entities]
   (set
    (map
-    (fn [{:keys [name adapter]
-          :or {adapter identity}}]
+    (fn [{:keys [name adapter handler]
+          :or {adapter identity
+               handler identity}}]
       [(str "/" (clojure.core/name name) "/create")
        :post (conj interceptors
-                   (respond-create-entity name adapter))
+                   (respond-create-entity name adapter handler))
        :route-name (keyword (str "creating-entity-" (clojure.core/name name)))])
     entities)))
 

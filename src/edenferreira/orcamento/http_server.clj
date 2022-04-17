@@ -3,101 +3,69 @@
             [io.pedestal.http.route :as route]
             [io.pedestal.http.content-negotiation :as conneg]
             [io.pedestal.http.body-params :as body-params]
+            [br.com.orcamento :as-alias orc]
+            [br.com.orcamento.budget :as-alias budget]
+            [br.com.orcamento.category :as-alias category]
+            [br.com.orcamento.account :as-alias account]
+            [br.com.orcamento.entry :as-alias entry]
             [clojure.data.json :as json]
-            [hiccup.core :as h]
-            [hiccup.page :as h.page]
-            [hiccup.form :as h.form]
-            [clojure.string :as str]
-            [clojure.set :as set]))
+            [edenferreira.rawd.api :as rawd]
+            [edenferreira.orcamento.main :as main])
+  (:import [java.time Instant]))
+
+(defn make-handler-catch-invalid-state [f]
+  (fn [input]
+    (try
+      {:status 200
+       :body (f input)}
+      (catch java.lang.IllegalStateException _e
+        {:status 400
+         :body {:invalid-input input}}))))
+
 (def entities
   [{:name :budget
-    :attributes {:name {:type "text"}}}
+    :attributes {:name {:type "text"}}
+    :adapter (fn [{:keys [name]}]
+               {:id (random-uuid)
+                :name name
+                :as-of (Instant/now)})
+    :handler (make-handler-catch-invalid-state main/create-budget)}
    {:name :account
-    :attributes {:name {:type "text"}}}
+    :attributes {:name {:type "text"}
+                 :initial-balance {:type "number"}}
+    :adapter (fn [{:keys [name initial-balance]}]
+               {:id (random-uuid)
+                :name name
+                :initial-balance (or initial-balance 0M)
+                :as-of (Instant/now)})
+    :handler (make-handler-catch-invalid-state main/create-account)}
    {:name :category
-    :attributes {:name {:type "text"}}}
+    :attributes {:name {:type "text"}}
+    :adapter (fn [{:keys [name]}]
+               {:id (random-uuid)
+                :name name
+                :as-of (Instant/now)})
+    :handler (make-handler-catch-invalid-state main/create-category)}
    {:name :entry
-    :attributes {:amount {:type "text"}
-                 :type {:type "text"}
+    :attributes {:amount {:type "number"}
+                 :type {:type "select"
+                        :options ["credit" "debit"]}
                  :other-party {:type "text"}
-                 :when {:type "date"}
                  :budget {:type "text"}
                  :account {:type "text"}
-                 :category {:type "text"}}}])
-
-;; TODO placeholder
-(defn create-form-input [& {:keys [id type label name placeholder]}]
-  [:li
-   [:label {:for id} label]
-   [:input (cond-> {:type type
-                    :id id
-                    :name name}
-             placeholder (assoc :placeholder placeholder))]])
-
-(defn create-form [& {:keys [enctype action method items button-label]}]
-  [:form {:action action
-          :method method
-          :enctype enctype}
-   [:ul (seq items)]
-   [:button button-label]])
-
-(defn entity->form [& {:keys [name attributes]}]
-  (create-form :enctype "application/x-www-form-urlencoded"
-               :method "POST"
-               :action (str "/" (clojure.core/name name) "/create")
-               :items (map
-                       (fn [[attr {:keys [type]}]]
-                         (create-form-input :id (str (clojure.core/name name)
-                                                     "-"
-                                                     (clojure.core/name attr))
-                                            :type type
-                                            :label (str (clojure.core/name name)
-                                                        " "
-                                                        (clojure.core/name attr))
-                                            :name (str (clojure.core/name name)
-                                                       "-"
-                                                       (clojure.core/name attr))))
-                       attributes)
-               :button-label (str "Create "
-                                  (clojure.core/name name))))
-
-(defn entities->forms [entities]
-  [:div (map entity->form entities)])
-
-(defn ok [body]
-  {:status 200 :body body})
-
-(defn not-found []
-  {:status 404 :body "Not found\n"})
-
-(defn index [_]
-  (h.page/html5
-   {:lang "en"}
-   (h/html
-    [:div {:class ""}
-     [:h1 {:class ""} "Hello Hiccup"]
-     (entities->forms entities)
-     [:hr]
-     [:h1 {:class "text-success"} "Hello World!"]])))
-
-(defn respond-index [request]
-  (ok (index request)))
-
-(defn hello-world [{:keys [name]}]
-  (h.page/html5
-   {:lang "en"}
-   (h/html [:p (str "Hello, " name)])))
-
-(defn respond-hello [request]
-  (ok (hello-world (get-in request [:query-params]))))
-
-(defn creating [body]
-  (h.page/html5
-   {:lang "en"}
-   (h/html [:p (map #(do [:p (str (first %) " : " (second %))]) body)])))
-
-(defn respond-creating [request]
-  (ok (creating (:params request))))
+                 :category {:type "text"}}
+    :adapter (fn [{:keys [amount type other-party budget account category]}]
+               {:id (random-uuid)
+                :amount (bigdec amount)
+                :type (case type
+                        "credit" ::entry/credit
+                        "debit" ::entry/debit)
+                :other-party other-party
+                :as-of (Instant/now)
+                :budget budget
+                :account account
+                :category category})
+    :handler (make-handler-catch-invalid-state main/add-entry)}])
 
 (def supported-types ["text/html" "application/edn" "application/json" "text/plain"])
 
@@ -120,24 +88,10 @@
                                    :body coerced-body)]
        (assoc context :response updated-response)))})
 
-(defn respond-create-entity [entity]
-  (fn create-entity [request]
-    (ok (assoc (:params request)
-               ::entity entity))))
-
 (def routes
   (route/expand-routes
-   (set/union
-    #{["/index.html" :get [(body-params/body-params) coerce-body content-neg-intc respond-index] :route-name :index]
-      ["/hello-world" :get [(body-params/body-params) coerce-body content-neg-intc respond-hello] :route-name :hello-world]
-      ["/creating" :post [(body-params/body-params) coerce-body content-neg-intc respond-creating] :route-name :creating]}
-    (set
-     (map
-      (fn [{:keys [name]}]
-        [(str "/" (clojure.core/name name) "/create")
-         :post [(body-params/body-params) coerce-body content-neg-intc (respond-create-entity name)]
-         :route-name (keyword (str "creating-entity-" (clojure.core/name name)))])
-      entities)))))
+   (rawd/routes [(body-params/body-params) coerce-body content-neg-intc]
+                entities)))
 
 (defn create-server []
   (http/create-server
@@ -172,5 +126,5 @@
 (comment
   (start-dev)
   (restart)
-  (entities->forms entities)
+  (rawd/entities->forms entities)
   (route/try-routing-for routes :prefix-tree "/greet" :get))
