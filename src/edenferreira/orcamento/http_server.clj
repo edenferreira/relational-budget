@@ -38,6 +38,7 @@
     :adapter (fn [{:keys [name type initial-balance]}]
                {:id (random-uuid)
                 :name name
+                :type type
                 :initial-balance (or initial-balance 0M)
                 :as-of (Instant/now)})
     :handler (make-handler-catch-invalid-state main/create-account)}
