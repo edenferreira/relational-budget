@@ -11,6 +11,22 @@
                             (str (name kwd) ":" val "; "))
                          (apply hash-map info)))))
 
+(defn rels->table [rels]
+  [:ul
+   (map (fn [rel]
+          [:li
+           [:ul (map (fn [[k v]]
+                       [:li (str (name k) ": " v)])
+                     rel)]])
+        rels)])
+
+(defn db->table [m]
+  [:div
+   (map (fn [[k v]]
+          [:div [:div k]
+           (rels->table v)])
+        m)])
+
 (defn create-select-input
   [& {:keys [id form label name options]}]
   [:li
@@ -82,19 +98,20 @@
 (defn entities->forms [entities]
   [:div (map entity->form entities)])
 
-(defn create-index [entities]
-  (fn index [_]
+(defn create-index [get-state entities]
+  (fn index [_request]
     (h.page/html5
-     {:lang "en"}
+     {}
      (h/html
       [:div {:class ""}
-       [:h1 {:class ""} "Hello Hiccup"]
+       [:h1 {:class ""} "Rawd"]
        (entities->forms entities)
        [:hr]
-       [:h1 {:class "text-success"} "Hello World!"]]))))
+       [:h1 {:class "text-success"} "State"]
+       (db->table (get-state))]))))
 
-(defn create-respond-index [entities]
-  (let [index (create-index entities)]
+(defn create-respond-index [get-state entities]
+  (let [index (create-index get-state entities)]
     (fn respond-index [request]
       {:status 200 :body (index request)})))
 
@@ -106,9 +123,12 @@
                                                    (str (name entity) "-")
                                                    ""))))
           handled (handler adapted)]
-      (or handled
-          {:status 200
-           :body "no return"}))))
+      (if (= 200 (:status handled))
+        (update handled
+                :body
+                (comp #(h.page/html5 {} %)
+                      db->table))
+        handled))))
 
 (defn entities->routes [interceptors entities]
   (set
@@ -122,7 +142,14 @@
        :route-name (keyword (str "creating-entity-" (clojure.core/name name)))])
     entities)))
 
-(defn routes [interceptors entities]
+(defn routes [interceptors get-state entities]
   (set/union
-   #{["/index.html" :get (conj interceptors (create-respond-index entities)) :route-name :index]}
+   #{["/index.html" :get (conj interceptors (create-respond-index get-state entities)) :route-name :index]}
    (entities->routes interceptors entities)))
+
+(comment
+  (->> (db->table {:c #{{:a 1 :b 2}
+                        {:a 2 :b 3}}})
+       (h.page/html5 {}))
+  (do h)
+  '_)

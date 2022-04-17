@@ -94,6 +94,7 @@
 (def routes
   (route/expand-routes
    (rawd/routes [(body-params/body-params) coerce-body content-neg-intc]
+                #(deref main/db)
                 entities)))
 
 (defn create-server []

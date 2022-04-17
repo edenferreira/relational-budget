@@ -54,5 +54,5 @@
    :category "category name"
    :account "account name"
    :as-of #inst "2000-01-01T00:00:00Z")
-  @db
+  (integrity/category-name-must-be-unique @db)
   '_)
