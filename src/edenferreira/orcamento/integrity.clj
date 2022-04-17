@@ -36,7 +36,9 @@
 
 (defn category-name-must-be-unique
   [& {::orc/keys [categories]}]
-  (> 2 (count (set/project categories [::category/id ::category/name]))))
+  (every? (fn [[_k v]]
+            (< (count v) 2))
+          (set/index categories [::category/name])))
 
 (defn account-name-must-be-unique
   [& {::orc/keys [accounts]}]
