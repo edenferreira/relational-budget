@@ -32,7 +32,9 @@
 
 (defn budget-name-must-be-unique
   [& {::orc/keys [budgets]}]
-  (> 2 (count (set/project budgets [::budget/id ::budget/name]))))
+  (every? (fn [[_k v]]
+            (< (count v) 2))
+          (set/index budgets [::budget/name])))
 
 (defn category-name-must-be-unique
   [& {::orc/keys [categories]}]
@@ -42,7 +44,9 @@
 
 (defn account-name-must-be-unique
   [& {::orc/keys [accounts]}]
-  (> 2 (count (set/project accounts [::account/id ::account/name]))))
+  (every? (fn [[_k v]]
+            (< (count v) 2))
+          (set/index accounts [::account/name])))
 
 (comment
   (entry-must-have-existing-account
