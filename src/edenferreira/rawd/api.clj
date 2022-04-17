@@ -1,5 +1,9 @@
 (ns ^{:doc "CRUD for development"}
-    edenferreira.rawd.api)
+    edenferreira.rawd.api
+  (:require [clojure.string :as str]
+            [hiccup.page :as h.page]
+            [hiccup.core :as h]
+            [clojure.set :as set]))
 
 ;; slightly modified from https://stackoverflow.com/questions/12679754/idiomatic-way-of-rendering-style-info-using-clojure-hiccup
 (defn style [& info]
@@ -77,3 +81,42 @@
 
 (defn entities->forms [entities]
   [:div (map entity->form entities)])
+
+(defn create-index [entities]
+  (fn index [_]
+    (h.page/html5
+     {:lang "en"}
+     (h/html
+      [:div {:class ""}
+       [:h1 {:class ""} "Hello Hiccup"]
+       (entities->forms entities)
+       [:hr]
+       [:h1 {:class "text-success"} "Hello World!"]]))))
+
+(defn create-respond-index [entities]
+  (let [index (create-index entities)]
+    (fn respond-index [request]
+      {:status 200 :body (index request)})))
+
+(defn respond-create-entity [entity adapter]
+  (fn create-entity [request]
+    {:status 200
+     :body (assoc (adapter (update-keys (:params request)
+                                        #(keyword (str/replace % (str (name entity) "-") ""))))
+                  ::entity entity)}))
+
+(defn entities->routes [interceptors entities]
+  (set
+   (map
+    (fn [{:keys [name adapter]
+          :or {adapter identity}}]
+      [(str "/" (clojure.core/name name) "/create")
+       :post (conj interceptors
+                   (respond-create-entity name adapter))
+       :route-name (keyword (str "creating-entity-" (clojure.core/name name)))])
+    entities)))
+
+(defn routes [interceptors entities]
+  (set/union
+   #{["/index.html" :get (conj interceptors (create-respond-index entities)) :route-name :index]}
+   (entities->routes interceptors entities)))
