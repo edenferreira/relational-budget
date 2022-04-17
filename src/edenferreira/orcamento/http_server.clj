@@ -86,9 +86,9 @@
                           "text/plain" body
                           "application/edn" (pr-str body)
                           "application/json" (json/write-str body))
-           updated-response (assoc response
-                                   :headers {"Content-Type" accepted}
-                                   :body coerced-body)]
+           updated-response (-> response
+                                (assoc-in [:headers "Content-Type"] accepted)
+                                (assoc :body coerced-body))]
        (assoc context :response updated-response)))})
 
 (def routes
@@ -130,5 +130,6 @@
 (comment
   (start-dev)
   (restart)
+  (swap! main/db empty)
   (rawd/entities->forms entities)
   (route/try-routing-for routes :prefix-tree "/greet" :get))
