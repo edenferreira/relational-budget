@@ -7,7 +7,62 @@
             [hiccup.core :as h]
             [hiccup.page :as h.page]
             [hiccup.form :as h.form]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [clojure.set :as set]))
+(def entities
+  [{:name :budget
+    :attributes {:name {:type "text"}}}
+   {:name :account
+    :attributes {:name {:type "text"}}}
+   {:name :category
+    :attributes {:name {:type "text"}}}
+   {:name :entry
+    :attributes {:amount {:type "text"}
+                 :type {:type "text"}
+                 :other-party {:type "text"}
+                 :when {:type "date"}
+                 :budget {:type "text"}
+                 :account {:type "text"}
+                 :category {:type "text"}}}])
+
+;; TODO placeholder
+(defn create-form-input [& {:keys [id type label name placeholder]}]
+  [:li
+   [:label {:for id} label]
+   [:input (cond-> {:type type
+                    :id id
+                    :name name}
+             placeholder (assoc :placeholder placeholder))]])
+
+(defn create-form [& {:keys [enctype action method items button-label]}]
+  [:form {:action action
+          :method method
+          :enctype enctype}
+   [:ul (seq items)]
+   [:button button-label]])
+
+(defn entity->form [& {:keys [name attributes]}]
+  (create-form :enctype "application/x-www-form-urlencoded"
+               :method "POST"
+               :action (str "/" (clojure.core/name name) "/create")
+               :items (map
+                       (fn [[attr {:keys [type]}]]
+                         (create-form-input :id (str (clojure.core/name name)
+                                                     "-"
+                                                     (clojure.core/name attr))
+                                            :type type
+                                            :label (str (clojure.core/name name)
+                                                        " "
+                                                        (clojure.core/name attr))
+                                            :name (str (clojure.core/name name)
+                                                       "-"
+                                                       (clojure.core/name attr))))
+                       attributes)
+               :button-label (str "Create "
+                                  (clojure.core/name name))))
+
+(defn entities->forms [entities]
+  [:div (map entity->form entities)])
 
 (defn ok [body]
   {:status 200 :body body})
@@ -21,69 +76,7 @@
    (h/html
     [:div {:class ""}
      [:h1 {:class ""} "Hello Hiccup"]
-     (h.form/form-to
-      {:enctype "application/x-www-form-urlencoded"} [:post "/creating"]
-      (h.form/label "account" "Account:")
-      (h.form/text-field {:class ""
-                          :id "name"
-                          :placeholder "Enter a name here"}
-                         "account")
-      (h.form/submit-button {} "Create Account"))
-     (h.form/form-to
-      {:enctype "application/x-www-form-urlencoded"} [:post "/creating"]
-      (h.form/label "category" "Category:")
-      (h.form/text-field {:class ""
-                          :id "name"
-                          :placeholder "Enter a name here"}
-                         "category")
-      (h.form/submit-button {} "Create Category"))
-     (h.form/form-to
-      {:enctype "application/x-www-form-urlencoded"} [:post "/creating"]
-      (h.form/label "budget" "Budget:")
-      (h.form/text-field {:class ""
-                          :id "name"
-                          :placeholder "Enter a name here"}
-                         "budget")
-      (h.form/submit-button {} "Create Budget"))
-     (h.form/form-to
-      {:enctype "application/x-www-form-urlencoded"} [:post "/creating"]
-      (h.form/label "entry" "Entry:")
-      [:div (h.form/label "amount" "Amount:")
-       (h.form/text-field {:class ""
-                                :id "amount"
-                                :placeholder "Enter a name here"}
-                               "amount")]
-      [:div (h.form/label "type" "Type:")
-       (h.form/text-field {:class ""
-                                :id "type"
-                                :placeholder "Enter a name here"}
-                               "type")]
-      [:div (h.form/label "other-party" "Other Party:")
-       (h.form/text-field {:class ""
-                                :id "other-party"
-                                :placeholder "Enter a name here"}
-                               "other-party")]
-      [:div (h.form/label "when" "When:")
-       (h.form/text-field {:class ""
-                                :id "when"
-                                :placeholder "Enter a name here"}
-                               "when")]
-      [:div (h.form/label "account" "Account:")
-       (h.form/text-field {:class ""
-                                :id "name"
-                                :placeholder "Enter a name here"}
-                               "account")]
-      [:div (h.form/label "category" "Category:")
-       (h.form/text-field {:class ""
-                                  :id "name"
-                                  :placeholder "Enter a name here"}
-                                 "category")]
-      [:div (h.form/label "budget" "Budget:")
-       (h.form/text-field {:class ""
-                                :id "name"
-                                :placeholder "Enter a name here"}
-                               "budget")]
-      (h.form/submit-button {} "Create Entry"))
+     (entities->forms entities)
      [:hr]
      [:h1 {:class "text-success"} "Hello World!"]])))
 
@@ -127,11 +120,24 @@
                                    :body coerced-body)]
        (assoc context :response updated-response)))})
 
+(defn respond-create-entity [entity]
+  (fn create-entity [request]
+    (ok (assoc (:params request)
+               ::entity entity))))
+
 (def routes
   (route/expand-routes
-   #{["/index.html" :get [(body-params/body-params) coerce-body content-neg-intc respond-index] :route-name :index]
-     ["/hello-world" :get [(body-params/body-params) coerce-body content-neg-intc respond-hello] :route-name :hello-world]
-     ["/creating" :post [(body-params/body-params) coerce-body content-neg-intc respond-creating] :route-name :creating]}))
+   (set/union
+    #{["/index.html" :get [(body-params/body-params) coerce-body content-neg-intc respond-index] :route-name :index]
+      ["/hello-world" :get [(body-params/body-params) coerce-body content-neg-intc respond-hello] :route-name :hello-world]
+      ["/creating" :post [(body-params/body-params) coerce-body content-neg-intc respond-creating] :route-name :creating]}
+    (set
+     (map
+      (fn [{:keys [name]}]
+        [(str "/" (clojure.core/name name) "/create")
+         :post [(body-params/body-params) coerce-body content-neg-intc (respond-create-entity name)]
+         :route-name (keyword (str "creating-entity-" (clojure.core/name name)))])
+      entities)))))
 
 (defn create-server []
   (http/create-server
@@ -166,4 +172,5 @@
 (comment
   (start-dev)
   (restart)
+  (entities->forms entities)
   (route/try-routing-for routes :prefix-tree "/greet" :get))
