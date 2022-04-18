@@ -5,5 +5,5 @@
   [v ^java.io.Writer w]
   (.write w  (str "#rawd/instant \"" v "\"")))
 
-(defn parse [s]
+(defn parse ^Instant [s]
   (Instant/parse s))
