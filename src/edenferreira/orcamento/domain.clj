@@ -14,6 +14,9 @@
 (s/def ::budget/id uuid?)
 (s/def ::budget/name (s/and string? #(< 0 (count %))))
 (s/def ::budget/created-at inst?)
+(s/def ::budget/balance
+  (s/with-gen (s/and decimal? pos?)
+    (constantly positive-big-decimal-generator)))
 (s/def ::orc/budget
   (s/schema [::budget/id
              ::budget/name
@@ -25,6 +28,9 @@
 (s/def ::category/id uuid?)
 (s/def ::category/name (s/and string? #(< 0 (count %))))
 (s/def ::category/created-at inst?)
+(s/def ::category/balance
+  (s/with-gen (s/and decimal? pos?)
+    (constantly positive-big-decimal-generator)))
 (s/def ::orc/category
   (s/schema [::category/id
              ::category/name

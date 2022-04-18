@@ -8,11 +8,11 @@
           (assoc r k (f r)))
         rel)))
 
-(defn summarize [rel projection f]
+(defn summarize [projection f rels]
   (set
    (map (fn [[projected rels]]
           (merge projected (f rels)))
-        (set/index rel projection))))
+        (set/index rels projection))))
 
 (defn max-attr [k]
   (fn [rels]
