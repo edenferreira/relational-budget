@@ -4,8 +4,7 @@
             [br.com.orcamento.category :as-alias category]
             [br.com.orcamento.account :as-alias account]
             [br.com.orcamento.entry :as-alias entry]
-            [clojure.set :as set]
-            [edenferreira.relational-algebra.extensions :as rel]))
+            [clojure.set :as set]))
 
 (defn updated-balance-from-entry
   [balance {::entry/keys [amount type]}]
