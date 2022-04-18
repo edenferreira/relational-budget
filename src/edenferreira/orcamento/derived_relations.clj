@@ -50,19 +50,37 @@
               logic/entry-when->day
               entries)))
 
-(defn entries-balance-by-days [entries]
+(defn entries-balances-by-days [entries]
   (rel/summarize
    [::entry/day
-    ::account/name
-    ::category/name
     ::budget/name]
-   (logic/reduce-to-key ::entry/balance
+   (logic/reduce-to-key :day/balance
                         logic/updated-balance-from-entry
                         0M)
    (rel/extend
     ::entry/day
      logic/entry-when->day
      entries)))
+
+(defn accounts-balances-by-days [accounts entries]
+  (set/rename
+   (rel/extend
+    ::account/balance-for-the-day
+     #(+ (::account/balance-for-the-day %)
+         (::account/initial-balance %))
+     (rel/summarize
+      [::entry/day
+       ::account/initial-balance
+       ::account/name
+       ::budget/name]
+      (logic/reduce-to-key ::account/balance-for-the-day
+                           logic/updated-balance-from-entry
+                           0M)
+      (rel/extend
+       ::entry/day
+        logic/entry-when->day
+        (set/join accounts entries))))
+   {::entry/day ::account/day}))
 
 (comment
   (accounts-with-balances
@@ -80,5 +98,8 @@
   (entries-on-days
    #{{::entry/day (java.time.Instant/parse "2022-04-18T00:00:00Z")}}
    (::orc/entries @edenferreira.orcamento.main/db))
-  (entries-balance-by-days (::orc/entries @edenferreira.orcamento.main/db))
+  (entries-balances-by-days (::orc/entries @edenferreira.orcamento.main/db))
+  (accounts-balances-by-days (::orc/accounts @edenferreira.orcamento.main/db)
+                             (::orc/entries @edenferreira.orcamento.main/db))
+
   '_)

@@ -94,22 +94,35 @@
 
 (defn get-state! []
   (let [state @main/db]
-    (assoc state
-           ::orc/accounts-with-balances
-           (derived-rels/accounts-with-balances
-            (::orc/accounts state)
-            (::orc/entries state))
-           ::orc/categories-with-balances
-           (derived-rels/categories-with-balances
-            (::orc/categories state)
-            (::orc/entries state))
-           ::orc/budgets-with-balances
-           (derived-rels/budgets-with-balances
-            (::orc/budgets state)
-            (::orc/entries state))
-           ::orc/entries-balance-by-days
-           (derived-rels/entries-balance-by-days
-            (::orc/entries state)))))
+    (-> state
+        (update ::orc/entries (partial sort-by ::entry/when))
+        (update ::orc/accounts (partial sort-by ::account/created-at))
+        (update ::orc/categories (partial sort-by ::category/created-at))
+        (update ::orc/budgets (partial sort-by ::budget/created-at))
+        (assoc ::orc/accounts-with-balances
+               (sort-by ::account/created-at
+                        (derived-rels/accounts-with-balances
+                         (::orc/accounts state)
+                         (::orc/entries state)))
+               ::orc/categories-with-balances
+               (sort-by ::category/created-at
+                        (derived-rels/categories-with-balances
+                         (::orc/categories state)
+                         (::orc/entries state)))
+               ::orc/budgets-with-balances
+               (sort-by ::budget/created-at
+                        (derived-rels/budgets-with-balances
+                         (::orc/budgets state)
+                         (::orc/entries state)))
+               ::orc/accounts-balances-by-days
+               (sort-by ::account/day
+                        (derived-rels/accounts-balances-by-days
+                         (::orc/accounts state)
+                         (::orc/entries state)))
+               ::orc/entries-balances-by-days
+               (sort-by ::entry/day
+                        (derived-rels/entries-balances-by-days
+                         (::orc/entries state)))))))
 
 (def routes
   (route/expand-routes

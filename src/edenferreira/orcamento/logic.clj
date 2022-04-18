@@ -19,4 +19,4 @@
     ::entry/debit (+ balance amount)))
 
 (defn entry-when->day [{::entry/keys [when]}]
-  (.truncatedTo ^Instant when ChronoUnit/HOURS))
+  (.truncatedTo ^Instant when ChronoUnit/DAYS))
