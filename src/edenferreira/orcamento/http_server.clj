@@ -10,7 +10,8 @@
             [br.com.orcamento.entry :as-alias entry]
             [clojure.data.json :as json]
             [edenferreira.rawd.api :as rawd]
-            [edenferreira.orcamento.main :as main])
+            [edenferreira.orcamento.main :as main]
+            [edenferreira.orcamento.derived-relations :as derived-rels])
   (:import [java.time Instant]))
 
 (defn make-handler-catch-invalid-state [f]
@@ -39,7 +40,7 @@
                {:id (random-uuid)
                 :name name
                 :type type
-                :initial-balance (or initial-balance 0M)
+                :initial-balance (or (bigdec initial-balance) 0M)
                 :as-of (Instant/now)})
     :handler (make-handler-catch-invalid-state main/create-account)}
    {:name :category
@@ -91,10 +92,29 @@
                                 (assoc :body coerced-body))]
        (assoc context :response updated-response)))})
 
+(defn get-state! []
+  (let [state @main/db]
+    (assoc state
+           ::orc/accounts-with-balances
+           (derived-rels/accounts-with-balances
+            (::orc/accounts state)
+            (::orc/entries state))
+           ::orc/categories-with-balances
+           (derived-rels/categories-with-balances
+            (::orc/categories state)
+            (::orc/entries state))
+           ::orc/budgets-with-balances
+           (derived-rels/budgets-with-balances
+            (::orc/budgets state)
+            (::orc/entries state))
+           ::orc/entries-balance-by-days
+           (derived-rels/entries-balance-by-days
+            (::orc/entries state)))))
+
 (def routes
   (route/expand-routes
    (rawd/routes [(body-params/body-params) coerce-body content-neg-intc]
-                #(deref main/db)
+                get-state!
                 entities)))
 
 (defn create-server []
@@ -128,8 +148,8 @@
   (start-dev))
 
 (comment
+  (get-state!)
   (start-dev)
   (restart)
-  (swap! main/db empty)
   (rawd/entities->forms entities)
   (route/try-routing-for routes :prefix-tree "/greet" :get))

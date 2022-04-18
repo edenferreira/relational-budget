@@ -19,3 +19,4 @@
 - [] improve the architecture for get-state instead of just the function, maybe interceptor
 - [] persist data from atom
 - [] create seed data
+- [] separate essential persiste state from derived information in domain
