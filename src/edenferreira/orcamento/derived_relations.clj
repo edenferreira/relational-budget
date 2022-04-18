@@ -6,81 +6,67 @@
             [br.com.orcamento.entry :as-alias entry]
             [clojure.set :as set]
             [edenferreira.orcamento.logic :as logic]
-            [edenferreira.relational-algebra.extensions :as rel]))
+            [edenferreira.clojure.set.extensions :as set.ext]))
 
 (defn accounts-with-balances [accounts entries]
-  (rel/extend
-   ::account/balance
-    #(+ (::account/balance %)
-        (::account/initial-balance %))
-    (rel/summarize
-     [::account/id
-      ::account/name
-      ::account/created-at
-      ::account/initial-balance]
-     (logic/reduce-to-key ::account/balance
-                          logic/updated-balance-from-entry
-                          0M)
-     (set/join accounts entries))))
+  (set.ext/extend
+      (set.ext/summarize
+       (set/join accounts entries)
+                         [::account/id
+                          ::account/name
+                          ::account/created-at
+                          ::account/initial-balance]
+                         ::account/balance
+                         #(reduce logic/updated-balance-from-entry 0M %))
+    ::account/balance #(+ (::account/balance %)
+                          (::account/initial-balance %))))
 
 (defn categories-with-balances [categories entries]
-  (rel/summarize
+  (set.ext/summarize
+   (set/join categories entries)
    [::category/id
     ::category/name
     ::category/created-at]
-   (logic/reduce-to-key ::category/balance
-                        logic/updated-balance-from-entry
-                        0M)
-   (set/join categories entries)))
+   ::category/balance #(reduce logic/updated-balance-from-entry 0M %)))
 
 (defn budgets-with-balances [budgets entries]
-  (rel/summarize
+  (set.ext/summarize
+   (set/join budgets entries)
    [::budget/id
     ::budget/name
     ::budget/created-at]
-   (logic/reduce-to-key ::budget/balance
-                        logic/updated-balance-from-entry
-                        0M)
-   (set/join budgets entries)))
+   ::budget/balance #(reduce logic/updated-balance-from-entry 0M %)))
 
 (defn entries-on-days [days entries]
   (set/join days
-            (rel/extend
-             ::entry/day
-              logic/entry-when->day
-              entries)))
+            (set.ext/extend entries
+              ::entry/day
+              logic/entry-when->day)))
 
 (defn entries-balances-by-days [entries]
-  (rel/summarize
+  (set.ext/summarize
+   (set.ext/extend entries
+     ::entry/day
+     logic/entry-when->day)
    [::entry/day
     ::budget/name]
-   (logic/reduce-to-key :day/balance
-                        logic/updated-balance-from-entry
-                        0M)
-   (rel/extend
-    ::entry/day
-     logic/entry-when->day
-     entries)))
+   :day/balance #(reduce logic/updated-balance-from-entry 0M %)))
 
 (defn accounts-balances-by-days [accounts entries]
   (set/rename
-   (rel/extend
-    ::account/balance-for-the-day
-     #(+ (::account/balance-for-the-day %)
-         (::account/initial-balance %))
-     (rel/summarize
-      [::entry/day
-       ::account/initial-balance
-       ::account/name
-       ::budget/name]
-      (logic/reduce-to-key ::account/balance-for-the-day
-                           logic/updated-balance-from-entry
-                           0M)
-      (rel/extend
-       ::entry/day
-        logic/entry-when->day
-        (set/join accounts entries))))
-   {::entry/day ::account/day}))
+   (set.ext/extend
+       (set.ext/summarize
+        (set.ext/extend (set/join accounts entries)
+          ::entry/day
+          logic/entry-when->day)
+        [::entry/day
+         ::account/initial-balance
+         ::account/name
+         ::budget/name]
+        ::account/balance-for-the-day #(reduce logic/updated-balance-from-entry 0M %))
+     ::account/balance-for-the-day #(+ (::account/balance-for-the-day %)
+                                       (::account/initial-balance %)))
+     {::entry/day ::account/day}))
 
 (comment
   (accounts-with-balances
