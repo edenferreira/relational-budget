@@ -5,7 +5,8 @@
             [br.com.orcamento.category :as-alias category]
             [br.com.orcamento.account :as-alias account]
             [br.com.orcamento.entry :as-alias entry]
-            [edenferreira.orcamento.api :as api]))
+            [edenferreira.orcamento.api :as api]
+            [edenferreira.orcamento.main :as main]))
 
 (defonce db
   (atom {}))
@@ -34,25 +35,42 @@
 (defn add-entry [& {:as m}]
   (swap! db api/add-entry m))
 
+
 (comment
   (swap! db empty)
-  (create-budget
-   :name "some budget"
-   :as-of #inst "2000-01-01T00:00:00Z")
-  (create-category
-   :name "category name"
-   :as-of #inst "2000-01-01T00:00:00Z")
-  (create-account
-   :name "account name"
-   :initial-balance 1000M
-   :as-of #inst "2000-01-01T00:00:00Z")
-  (add-entry
-   :type ::entry/credit
-   :amount 100M
-   :other-party "merchant"
-   :budget "some budget"
-   :category "category name"
-   :account "account name"
-   :as-of #inst "2000-01-01T00:00:00Z")
+  (require '[edenferreira.rawd.persistence :as rawd.persitence]
+           '[edenferreira.rawd.instant :as instant])
+  (do
+    (create-budget
+     :id (random-uuid)
+     :name "some budget"
+     :as-of (instant/parse "2000-01-01T00:00:00Z"))
+    (create-category
+     :id (random-uuid)
+     :name "category name"
+     :as-of (instant/parse "2000-01-01T00:00:00Z"))
+    (create-account
+     :id (random-uuid)
+     :name "account name"
+     :type "checking"
+     :initial-balance 1000M
+     :as-of (instant/parse "2000-01-01T00:00:00Z"))
+    (add-entry
+     :id (random-uuid)
+     :type ::entry/credit
+     :amount 100M
+     :other-party "merchant"
+     :budget "some budget"
+     :category "category name"
+     :account "account name"
+     :as-of (instant/parse "2000-01-01T00:00:00Z")))
   (integrity/category-name-must-be-unique @db)
+  (def path "./persisted.edn")
+  ((requiring-resolve `edenferreira.rawd.persistence/persist!)
+   @main/db
+   path)
+  (reset! main/db
+          ((requiring-resolve `edenferreira.rawd.persistence/read!)
+           path))
+  @main/db
   '_)

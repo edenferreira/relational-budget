@@ -20,3 +20,7 @@
 - [] persist data from atom
 - [] create seed data
 - [] separate essential persiste state from derived information in domain
+- [] create auxiliary relations
+- [x] be able to persist and recover Instants
+- [] categories should have balances and attributions that changed them
+- [] money should be moved between categories
