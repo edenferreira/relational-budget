@@ -23,4 +23,7 @@
 - [] create auxiliary relations
 - [x] be able to persist and recover Instants
 - [] categories should have balances and attributions that changed them
+- [] relations generation for dates
 - [] money should be moved between categories
+- [] create assignment entity that assignes to categories
+- [] create money movement entity that moves money between categories
