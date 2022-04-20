@@ -9,17 +9,34 @@
             [edenferreira.clojure.set.extensions :as set.ext]))
 
 (defn accounts-with-balances [accounts entries]
-  (set.ext/extend
-      (set.ext/summarize
-       (set/join accounts entries)
-                         [::account/id
-                          ::account/name
-                          ::account/created-at
-                          ::account/initial-balance]
-                         ::account/balance
-                         #(reduce logic/updated-balance-from-entry 0M %))
-    ::account/balance #(+ (::account/balance %)
-                          (::account/initial-balance %))))
+  (let [account-with-entries (set/join accounts entries)]
+    (set.ext/project-away
+     (set/union
+      (set.ext/extend (set/difference
+                       (set/project
+                        accounts
+                        [::account/id
+                         ::account/name
+                         ::account/created-at
+                         ::account/initial-balance])
+                       (set/project
+                        account-with-entries
+                        [::account/id
+                         ::account/name
+                         ::account/created-at
+                         ::account/initial-balance]))
+        ::account/balance ::account/initial-balance)
+      (set.ext/extend (set.ext/summarize
+                        account-with-entries
+                       [::account/id
+                        ::account/name
+                        ::account/created-at
+                        ::account/initial-balance]
+                       ::account/balance
+                       #(reduce logic/updated-balance-from-entry 0M %))
+        ::account/balance #(+ (::account/balance %)
+                              (::account/initial-balance %))))
+     [::account/initial-balance])))
 
 (defn categories-with-balances [categories entries]
   (set.ext/summarize
