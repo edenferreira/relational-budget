@@ -67,6 +67,43 @@
                      :type ::entry/debit
                      ::account/name "account name"}})))))
 
+(deftest categories-with-balances
+  (let [category-id (random-uuid)
+        category-id2 (random-uuid)]
+    (is (match?
+         #{#::category{:id category-id
+                       :name "category name"
+                       :created-at (Instant/parse "2000-01-01T00:00:00Z")
+                       :balance -10M}}
+         (derived-relations/categories-with-balances
+          #{#::category{:id category-id
+                        :name "category name"
+                        :created-at (Instant/parse "2000-01-01T00:00:00Z")}}
+          #{#::entry{:amount 10M
+                     :type ::entry/credit
+                     ::category/name "category name"}})))
+    (is (match?
+         #{#::category{:id category-id
+                       :name "category name"
+                       :created-at (Instant/parse "2000-01-01T00:00:00Z")
+                       :balance 500M}
+           #::category{:id category-id2
+                       :name "another category"
+                       :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
+         (derived-relations/categories-with-balances
+          #{#::category{:id category-id
+                        :name "category name"
+                        :created-at (Instant/parse "2000-01-01T00:00:00Z")}
+            #::category{:id category-id2
+                        :name "another category"
+                        :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
+          #{#::entry{:amount 300M
+                     :type ::entry/debit
+                     ::category/name "category name"}
+            #::entry{:amount 200M
+                     :type ::entry/debit
+                     ::category/name "category name"}})))))
+
 (comment
   (clojure.test/run-tests)
   (derived-relations/accounts-with-balances
