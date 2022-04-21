@@ -104,6 +104,43 @@
                      :type ::entry/debit
                      ::category/name "category name"}})))))
 
+(deftest budgets-with-balances
+  (let [budget-id (random-uuid)
+        budget-id2 (random-uuid)]
+    (is (match?
+         #{#::budget{:id budget-id
+                       :name "budget name"
+                       :created-at (Instant/parse "2000-01-01T00:00:00Z")
+                       :balance -10M}}
+         (derived-relations/budgets-with-balances
+          #{#::budget{:id budget-id
+                        :name "budget name"
+                        :created-at (Instant/parse "2000-01-01T00:00:00Z")}}
+          #{#::entry{:amount 10M
+                     :type ::entry/credit
+                     ::budget/name "budget name"}})))
+    (is (match?
+         #{#::budget{:id budget-id
+                       :name "budget name"
+                       :created-at (Instant/parse "2000-01-01T00:00:00Z")
+                       :balance 100M}
+           #::budget{:id budget-id2
+                       :name "another budget"
+                       :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
+         (derived-relations/budgets-with-balances
+          #{#::budget{:id budget-id
+                        :name "budget name"
+                        :created-at (Instant/parse "2000-01-01T00:00:00Z")}
+            #::budget{:id budget-id2
+                        :name "another budget"
+                        :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
+          #{#::entry{:amount 300M
+                     :type ::entry/debit
+                     ::budget/name "budget name"}
+            #::entry{:amount 200M
+                     :type ::entry/credit
+                     ::budget/name "budget name"}})))))
+
 (comment
   (clojure.test/run-tests)
   (derived-relations/accounts-with-balances

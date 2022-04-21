@@ -61,12 +61,26 @@
       ::category/balance #(reduce logic/updated-balance-from-entry 0M %)))))
 
 (defn budgets-with-balances [budgets entries]
-  (set.ext/summarize
-   (set/join budgets entries)
-   [::budget/id
-    ::budget/name
-    ::budget/created-at]
-   ::budget/balance #(reduce logic/updated-balance-from-entry 0M %)))
+  (let [budgets-with-entries (set/join budgets entries)]
+    (set/union
+     (set.ext/extend (set/difference
+                      (set/project
+                       budgets
+                       [::budget/id
+                        ::budget/name
+                        ::budget/created-at])
+                      (set/project
+                       budgets-with-entries
+                       [::budget/id
+                        ::budget/name
+                        ::budget/created-at]))
+       ::account/balance (constantly 0M))
+     (set.ext/summarize
+      budgets-with-entries
+      [::budget/id
+       ::budget/name
+       ::budget/created-at]
+      ::budget/balance #(reduce logic/updated-balance-from-entry 0M %)))))
 
 (defn entries-on-days [days entries]
   (set/join days
