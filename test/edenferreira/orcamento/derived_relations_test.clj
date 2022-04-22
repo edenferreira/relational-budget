@@ -6,6 +6,7 @@
             [br.com.orcamento.budget :as-alias budget]
             [br.com.orcamento.category :as-alias category]
             [br.com.orcamento.account :as-alias account]
+            [br.com.orcamento.assignment :as-alias assignment]
             [br.com.orcamento.entry :as-alias entry]
             [edenferreira.orcamento.derived-relations :as derived-relations]
             [clojure.test.check :as test.check]
@@ -79,6 +80,21 @@
           #{#::category{:id category-id
                         :name "category name"
                         :created-at (Instant/parse "2000-01-01T00:00:00Z")}}
+          #{}
+          #{#::entry{:amount 10M
+                     :type ::entry/credit
+                     ::category/name "category name"}})))
+    (is (match?
+         #{#::category{:id category-id
+                       :name "category name"
+                       :created-at (Instant/parse "2000-01-01T00:00:00Z")
+                       :balance 0M}}
+         (derived-relations/categories-with-balances
+          #{#::category{:id category-id
+                        :name "category name"
+                        :created-at (Instant/parse "2000-01-01T00:00:00Z")}}
+          #{#::assignment{:amount 10M
+                          ::category/name "category name"}}
           #{#::entry{:amount 10M
                      :type ::entry/credit
                      ::category/name "category name"}})))
@@ -89,7 +105,8 @@
                        :balance 500M}
            #::category{:id category-id2
                        :name "another category"
-                       :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
+                       :created-at (Instant/parse "2000-01-02T00:00:00Z")
+                       :balance 0M}}
          (derived-relations/categories-with-balances
           #{#::category{:id category-id
                         :name "category name"
@@ -97,6 +114,31 @@
             #::category{:id category-id2
                         :name "another category"
                         :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
+          #{}
+          #{#::entry{:amount 300M
+                     :type ::entry/debit
+                     ::category/name "category name"}
+            #::entry{:amount 200M
+                     :type ::entry/debit
+                     ::category/name "category name"}})))
+    (is (match?
+         #{#::category{:id category-id
+                       :name "category name"
+                       :created-at (Instant/parse "2000-01-01T00:00:00Z")
+                       :balance 500M}
+           #::category{:id category-id2
+                       :name "another category"
+                       :created-at (Instant/parse "2000-01-02T00:00:00Z")
+                       :balance 100M}}
+         (derived-relations/categories-with-balances
+          #{#::category{:id category-id
+                        :name "category name"
+                        :created-at (Instant/parse "2000-01-01T00:00:00Z")}
+            #::category{:id category-id2
+                        :name "another category"
+                        :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
+          #{#::assignment{:amount 100M
+                          ::category/name "another category"}}
           #{#::entry{:amount 300M
                      :type ::entry/debit
                      ::category/name "category name"}
@@ -109,31 +151,31 @@
         budget-id2 (random-uuid)]
     (is (match?
          #{#::budget{:id budget-id
-                       :name "budget name"
-                       :created-at (Instant/parse "2000-01-01T00:00:00Z")
-                       :balance -10M}}
+                     :name "budget name"
+                     :created-at (Instant/parse "2000-01-01T00:00:00Z")
+                     :balance -10M}}
          (derived-relations/budgets-with-balances
           #{#::budget{:id budget-id
-                        :name "budget name"
-                        :created-at (Instant/parse "2000-01-01T00:00:00Z")}}
+                      :name "budget name"
+                      :created-at (Instant/parse "2000-01-01T00:00:00Z")}}
           #{#::entry{:amount 10M
                      :type ::entry/credit
                      ::budget/name "budget name"}})))
     (is (match?
          #{#::budget{:id budget-id
-                       :name "budget name"
-                       :created-at (Instant/parse "2000-01-01T00:00:00Z")
-                       :balance 100M}
+                     :name "budget name"
+                     :created-at (Instant/parse "2000-01-01T00:00:00Z")
+                     :balance 100M}
            #::budget{:id budget-id2
-                       :name "another budget"
-                       :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
+                     :name "another budget"
+                     :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
          (derived-relations/budgets-with-balances
           #{#::budget{:id budget-id
-                        :name "budget name"
-                        :created-at (Instant/parse "2000-01-01T00:00:00Z")}
+                      :name "budget name"
+                      :created-at (Instant/parse "2000-01-01T00:00:00Z")}
             #::budget{:id budget-id2
-                        :name "another budget"
-                        :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
+                      :name "another budget"
+                      :created-at (Instant/parse "2000-01-02T00:00:00Z")}}
           #{#::entry{:amount 300M
                      :type ::entry/debit
                      ::budget/name "budget name"}
@@ -163,4 +205,26 @@
    #{#::entry{:amount 10M
               :type ::entry/credit
               ::account/name "account name"}})
+
+  (derived-relations/categories-with-balances
+   #{#::category{:id (random-uuid)
+                 :name "category name"
+                 :created-at (Instant/parse "2000-01-01T00:00:00Z")}}
+   #{}
+   #{#::entry{:amount 10M
+              :type ::entry/credit
+              ::category/name "category name"}})
+
+  (derived-relations/categories-with-balances
+   #{#::category{:id (random-uuid)
+                 :name "other category name"
+                 :created-at (Instant/parse "2000-01-01T00:00:00Z")}
+     #::category{:id (random-uuid)
+                 :name "category name"
+                 :created-at (Instant/parse "2000-01-01T00:00:00Z")}}
+   #{#::assignment{:amount 10M
+                   ::category/name "category name"}}
+   #{#::entry{:amount 10M
+              :type ::entry/credit
+              ::category/name "category name"}})
   '_)

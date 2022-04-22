@@ -54,5 +54,34 @@
                           [:a :b]
                           :c #(->> % (map :c) sort last)))))
 
+(deftest left-join
+  (testing "is still a join"
+    (is (match? #{{:g 1 :h 2 :j 3}}
+                (set.ext/left-join
+                 #{{:g 1 :h 2}}
+                 #{{:g 1 :j 3}}))))
+
+  (is (match? #{{:g 1 :h 2 :j 3}
+                {:g 4 :h 5}}
+              (set.ext/left-join
+               #{{:g 1 :h 2}
+                 {:g 4 :h 5}}
+               #{{:g 1 :j 3}})))
+
+  (is (match? #{{:g 1 :h 2 :j 3}}
+              (set.ext/left-join
+               #{{:g 1 :j 3}}
+               #{{:g 1 :h 2}
+                 {:g 4 :h 5}}))))
+
 (comment
+(clojure.set/join
+                 #{{:g 1 :h 2}
+                   {:g 4 :h 5}}
+                 #{{:g 1 :j 3}})
+
+(set.ext/left-join
+                 #{{:g 1 :h 2}
+                  {:g 4 :h 5} }
+                 #{{:g 1 :j 3}})
   '_)

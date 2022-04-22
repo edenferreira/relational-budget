@@ -3,6 +3,7 @@
             [br.com.orcamento.budget :as-alias budget]
             [br.com.orcamento.category :as-alias category]
             [br.com.orcamento.account :as-alias account]
+            [br.com.orcamento.assignment :as-alias assignment]
             [br.com.orcamento.entry :as-alias entry])
   (:import [java.time Instant]
            [java.time.temporal ChronoUnit]))
@@ -14,9 +15,15 @@
 
 (defn updated-balance-from-entry
   [balance {::entry/keys [amount type]}]
-  (case type
-    ::entry/credit (- balance amount)
-    ::entry/debit (+ balance amount)))
+  (if type
+   (case type
+     ::entry/credit (- balance amount)
+     ::entry/debit (+ balance amount))
+    balance))
+
+(defn updated-balance-from-assignment [sum {::assignment/keys [amount]
+                                            :or {amount 0M}}]
+  (+ sum amount))
 
 (defn entry-when->day [{::entry/keys [when]}]
   (.truncatedTo ^Instant when ChronoUnit/DAYS))

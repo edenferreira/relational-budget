@@ -14,6 +14,14 @@
           rel))
     (meta rel)))
 
+(defn left-join [xrel yrel]
+  (let [joined (set/join xrel yrel)
+        xks (vec (keys (first xrel)))
+        left (set/difference
+              (set/project xrel xks)
+              (set/project joined xks))]
+    (set/union joined left)))
+
 (defn project-away
   [xrel ks]
   (with-meta (set (map #(apply dissoc % ks) xrel)) (meta xrel)))

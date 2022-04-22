@@ -3,84 +3,62 @@
             [br.com.orcamento.budget :as-alias budget]
             [br.com.orcamento.category :as-alias category]
             [br.com.orcamento.account :as-alias account]
+            [br.com.orcamento.assignment :as-alias assignment]
             [br.com.orcamento.entry :as-alias entry]
             [clojure.set :as set]
             [edenferreira.orcamento.logic :as logic]
             [edenferreira.clojure.set.extensions :as set.ext]))
 
 (defn accounts-with-balances [accounts entries]
-  (let [account-with-entries (set/join accounts entries)]
+  (let [account-with-entries (set.ext/left-join accounts entries)]
     (set.ext/project-away
-     (set/union
-      (set.ext/extend (set/difference
-                       (set/project
-                        accounts
-                        [::account/id
-                         ::account/name
-                         ::account/created-at
-                         ::account/initial-balance])
-                       (set/project
-                        account-with-entries
-                        [::account/id
-                         ::account/name
-                         ::account/created-at
-                         ::account/initial-balance]))
-        ::account/balance ::account/initial-balance)
-      (set.ext/extend (set.ext/summarize
-                        account-with-entries
-                       [::account/id
-                        ::account/name
-                        ::account/created-at
-                        ::account/initial-balance]
-                       ::account/balance
-                       #(reduce logic/updated-balance-from-entry 0M %))
-        ::account/balance #(+ (::account/balance %)
-                              (::account/initial-balance %))))
+     (set.ext/extend (set.ext/summarize
+                      account-with-entries
+                      [::account/id
+                       ::account/name
+                       ::account/created-at
+                       ::account/initial-balance]
+                      ::account/balance
+                      #(reduce logic/updated-balance-from-entry 0M %))
+       ::account/balance #(+ (::account/balance %)
+                             (::account/initial-balance %)))
      [::account/initial-balance])))
 
-(defn categories-with-balances [categories entries]
-  (let [categories-with-entries (set/join categories entries)]
-    (set/union
-     (set.ext/extend (set/difference
-                      (set/project
-                       categories
-                       [::category/id
-                        ::category/name
-                        ::category/created-at])
-                      (set/project
-                       categories-with-entries
-                       [::category/id
-                        ::category/name
-                        ::category/created-at]))
-       ::account/balance (constantly 0M))
-     (set.ext/summarize
-      categories-with-entries
-      [::category/id
-       ::category/name
-       ::category/created-at]
-      ::category/balance #(reduce logic/updated-balance-from-entry 0M %)))))
+
+(defn categories-with-initial-balance [categories assigments]
+  (set.ext/summarize
+   (set.ext/left-join categories assigments)
+   [::category/id
+    ::category/name
+    ::category/created-at]
+   ::category/balance
+   #(reduce logic/updated-balance-from-assignment 0M %)))
+
+(defn categories-with-balances [categories assignments entries]
+  (let [categories-with-entries (set.ext/left-join
+                                 (categories-with-initial-balance categories assignments)
+                                 entries)]
+    (set.ext/project-away
+     (set.ext/extend
+         (set.ext/summarize
+          categories-with-entries
+          [::category/id
+           ::category/name
+           ::category/created-at
+           ::category/balance]
+          ::category/entry-balance #(reduce logic/updated-balance-from-entry 0M %))
+       ::category/balance #(+ (::category/balance %)
+                              (::category/entry-balance %)))
+     [::category/entry-balance])))
 
 (defn budgets-with-balances [budgets entries]
-  (let [budgets-with-entries (set/join budgets entries)]
-    (set/union
-     (set.ext/extend (set/difference
-                      (set/project
-                       budgets
-                       [::budget/id
-                        ::budget/name
-                        ::budget/created-at])
-                      (set/project
-                       budgets-with-entries
-                       [::budget/id
-                        ::budget/name
-                        ::budget/created-at]))
-       ::account/balance (constantly 0M))
-     (set.ext/summarize
-      budgets-with-entries
-      [::budget/id
-       ::budget/name
-       ::budget/created-at]
-      ::budget/balance #(reduce logic/updated-balance-from-entry 0M %)))))
+  (let [budgets-with-entries (set.ext/left-join budgets entries)]
+    (set.ext/summarize
+     budgets-with-entries
+     [::budget/id
+      ::budget/name
+      ::budget/created-at]
+     ::budget/balance #(reduce logic/updated-balance-from-entry 0M %))))
 
 (defn entries-on-days [days entries]
   (set/join days
