@@ -14,8 +14,8 @@
         org.slf4j/slf4j-simple {:mvn/version "1.7.28"}}
 
  :aliases
- {:run-m {:main-opts ["-m" "edenferreira.orcamento"]}
-  :run-x {:ns-default edenferreira.orcamento
+ {:run-m {:main-opts ["-m" "edenferreira.relational-budget"]}
+  :run-x {:ns-default edenferreira.relational-budget
           :exec-fn greet
           :exec-args {:name "Clojure"}}
   :dev {:extra-deps {lambdaisland/kaocha {:mvn/version "1.0.641"}
@@ -29,6 +29,6 @@
   :uberjar {:replace-deps {com.github.seancorfield/depstar {:mvn/version "2.0.193"}}
             :exec-fn hf.depstar/uberjar
             :exec-args {:aot true
-                        :jar "orcamento.jar"
-                        :main-class "edenferreira.orcamento"
+                        :jar "relational-budget.jar"
+                        :main-class "edenferreira.relational-budget"
                         :sync-pom true}}}}

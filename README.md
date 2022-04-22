@@ -1,10 +1,10 @@
-# orcamento
+# relational-budget
 
 FIXME: my new application.
 
 ## Installation
 
-Download from https://github.com/edenferreira/orcamento
+Download from https://github.com/edenferreira/relational-budget
 
 ## Usage
 
@@ -20,7 +20,7 @@ Run the project, overriding the name to be greeted:
     $ clojure -X:run-x :name '"Someone"'
     Hello, Someone!
 
-Run the project directly, via `:main-opts` (`-m edenferreira.orcamento`):
+Run the project directly, via `:main-opts` (`-m edenferreira.relational-budget`):
 
     $ clojure -M:run-m
     Hello, World!
@@ -49,7 +49,7 @@ also need to remove `:sync-pom true` from the `deps.edn` file (in the `:exec-arg
 
 Run that uberjar:
 
-    $ java -jar orcamento.jar
+    $ java -jar relational-budget.jar
 
 ## Options
 

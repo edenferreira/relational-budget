@@ -1,13 +1,13 @@
-(ns edenferreira.orcamento.integration
+(ns edenferreira.relational-budget.integration
   (:require [clojure.test :refer [deftest testing is]]
-            [br.com.orcamento :as-alias orc]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.entry :as-alias entry]
+            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.entry :as-alias entry]
             [matcher-combinators.test :refer [match?]]
             [matcher-combinators.matchers :as m]
-            [edenferreira.orcamento.api :as api]))
+            [edenferreira.relational-budget.api :as api]))
 
 (def as-of #inst "1900-01-01T00:00:00Z")
 

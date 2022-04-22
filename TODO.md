@@ -12,7 +12,7 @@
 - [x] integrity checkers
 - [] test integrity checkers
 - [x] hiccup server start
-- [] based index for orcamento
+- [] based index for relational-budget
 - [] generic CRUD
 - [] input to handler of generic input more generous, perhaps the entire request with new key, use interceptors
 - [] have last of each in the state always to use for validation, maybe

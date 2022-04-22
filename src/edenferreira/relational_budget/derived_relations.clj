@@ -1,12 +1,12 @@
-(ns edenferreira.orcamento.derived-relations
-  (:require [br.com.orcamento :as-alias orc]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.assignment :as-alias assignment]
-            [br.com.orcamento.entry :as-alias entry]
+(ns edenferreira.relational-budget.derived-relations
+  (:require [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.assignment :as-alias assignment]
+            [br.com.relational-budget.entry :as-alias entry]
             [clojure.set :as set]
-            [edenferreira.orcamento.logic :as logic]
+            [edenferreira.relational-budget.logic :as logic]
             [edenferreira.clojure.set.extensions :as set.ext]))
 
 (defn accounts-with-balances [accounts entries]
@@ -93,22 +93,22 @@
 
 (comment
   (accounts-with-balances
-   (::orc/accounts @edenferreira.orcamento.main/db)
-   (::orc/entries @edenferreira.orcamento.main/db))
+   (::orc/accounts @edenferreira.relational-budget.main/db)
+   (::orc/entries @edenferreira.relational-budget.main/db))
   (categories-with-balances
-   (::orc/categories @edenferreira.orcamento.main/db)
-   (::orc/entries @edenferreira.orcamento.main/db))
+   (::orc/categories @edenferreira.relational-budget.main/db)
+   (::orc/entries @edenferreira.relational-budget.main/db))
   (budgets-with-balances
-   (::orc/budgets @edenferreira.orcamento.main/db)
-   (::orc/entries @edenferreira.orcamento.main/db))
+   (::orc/budgets @edenferreira.relational-budget.main/db)
+   (::orc/entries @edenferreira.relational-budget.main/db))
   (entries-on-days
    #{{::entry/day (java.time.Instant/parse "2022-04-10T00:00:00Z")}}
-   (::orc/entries @edenferreira.orcamento.main/db))
+   (::orc/entries @edenferreira.relational-budget.main/db))
   (entries-on-days
    #{{::entry/day (java.time.Instant/parse "2022-04-18T00:00:00Z")}}
-   (::orc/entries @edenferreira.orcamento.main/db))
-  (entries-balances-by-days (::orc/entries @edenferreira.orcamento.main/db))
-  (accounts-balances-by-days (::orc/accounts @edenferreira.orcamento.main/db)
-                             (::orc/entries @edenferreira.orcamento.main/db))
+   (::orc/entries @edenferreira.relational-budget.main/db))
+  (entries-balances-by-days (::orc/entries @edenferreira.relational-budget.main/db))
+  (accounts-balances-by-days (::orc/accounts @edenferreira.relational-budget.main/db)
+                             (::orc/entries @edenferreira.relational-budget.main/db))
 
   '_)

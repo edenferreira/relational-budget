@@ -1,10 +1,10 @@
-(ns edenferreira.orcamento.integrity
+(ns edenferreira.relational-budget.integrity
   (:require [clojure.set :as set]
-            [br.com.orcamento :as-alias orc]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.entry :as-alias entry]))
+            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.entry :as-alias entry]))
 
 (defn entry-must-have-existing-account
   [& {::orc/keys [accounts entries]}]

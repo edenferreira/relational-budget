@@ -1,4 +1,4 @@
-(ns edenferreira.orcamento
+(ns edenferreira.relational-budget
   (:gen-class))
 
 (defn greet

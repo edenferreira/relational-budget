@@ -1,9 +1,9 @@
-(ns edenferreira.orcamento.balances
-  (:require [br.com.orcamento :as-alias orc]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.entry :as-alias entry]
+(ns edenferreira.relational-budget.balances
+  (:require [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.entry :as-alias entry]
             [clojure.set :as set]))
 
 (defn updated-balance-from-entry

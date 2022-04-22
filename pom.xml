@@ -2,11 +2,11 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <groupId>net.clojars.edenferreira</groupId>
-  <artifactId>orcamento</artifactId>
+  <artifactId>relational-budget</artifactId>
   <version>0.1.0-SNAPSHOT</version>
-  <name>edenferreira/orcamento</name>
+  <name>edenferreira/relational-budget</name>
   <description>FIXME: my new application.</description>
-  <url>https://github.com/edenferreira/orcamento</url>
+  <url>https://github.com/edenferreira/relational-budget</url>
   <licenses>
     <license>
       <name>Eclipse Public License</name>
@@ -19,9 +19,9 @@
     </developer>
   </developers>
   <scm>
-    <url>https://github.com/edenferreira/orcamento</url>
-    <connection>scm:git:git://github.com/edenferreira/orcamento.git</connection>
-    <developerConnection>scm:git:ssh://git@github.com/edenferreira/orcamento.git</developerConnection>
+    <url>https://github.com/edenferreira/relational-budget</url>
+    <connection>scm:git:git://github.com/edenferreira/relational-budget.git</connection>
+    <developerConnection>scm:git:ssh://git@github.com/edenferreira/relational-budget.git</developerConnection>
     <tag>v0.1.0-SNAPSHOT</tag>
   </scm>
   <dependencies>

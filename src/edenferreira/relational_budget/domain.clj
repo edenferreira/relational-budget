@@ -1,14 +1,14 @@
-(ns edenferreira.orcamento.domain
+(ns edenferreira.relational-budget.domain
   (:require [clojure.alpha.spec :as s]
-            [br.com.orcamento :as-alias orc]
+            [br.com.relational-budget :as-alias orc]
             [clojure.test.check.generators :as gen]
             [clojure.alpha.spec.gen :as s.gen]
-            [br.com.orcamento.general-sspec :as-alias orc.general]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.assignment :as-alias assignment]
-            [br.com.orcamento.entry :as-alias entry])
+            [br.com.relational-budget.general-sspec :as-alias orc.general]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.assignment :as-alias assignment]
+            [br.com.relational-budget.entry :as-alias entry])
   (:import [java.time Instant]))
 
 (s/def ::positive-bigdec (s/with-gen (s/and decimal? #(or (pos? %) (zero? %)))

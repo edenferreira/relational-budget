@@ -1,13 +1,13 @@
-(ns edenferreira.orcamento.balances-test
+(ns edenferreira.relational-budget.balances-test
   (:require [clojure.test :refer [deftest testing is]]
-            [edenferreira.orcamento.generators :as generators]
-            [edenferreira.orcamento.domain :as domain]
-            [br.com.orcamento :as-alias orc]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.entry :as-alias entry]
-            [edenferreira.orcamento.balances :as balances]
+            [edenferreira.relational-budget.generators :as generators]
+            [edenferreira.relational-budget.domain :as domain]
+            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.entry :as-alias entry]
+            [edenferreira.relational-budget.balances :as balances]
             [clojure.test.check :as test.check]
             [clojure.test.check.properties :as prop]
             [matcher-combinators.test :refer [match?]]))

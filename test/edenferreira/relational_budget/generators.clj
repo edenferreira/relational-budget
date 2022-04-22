@@ -1,11 +1,11 @@
-(ns edenferreira.orcamento.generators
+(ns edenferreira.relational-budget.generators
   (:require [clojure.set :as set]
-            [edenferreira.orcamento.domain :as domain]
-            [br.com.orcamento :as-alias orc]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.entry :as-alias entry]
+            [edenferreira.relational-budget.domain :as domain]
+            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.entry :as-alias entry]
             [clojure.test.check.generators :as gen]
             [clojure.alpha.spec :as s]))
 

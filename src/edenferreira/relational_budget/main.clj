@@ -1,12 +1,12 @@
-(ns edenferreira.orcamento.main
-  (:require [edenferreira.orcamento.integrity :as integrity]
-            [br.com.orcamento :as-alias orc]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.entry :as-alias entry]
-            [edenferreira.orcamento.api :as api]
-            [edenferreira.orcamento.main :as main]))
+(ns edenferreira.relational-budget.main
+  (:require [edenferreira.relational-budget.integrity :as integrity]
+            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.entry :as-alias entry]
+            [edenferreira.relational-budget.api :as api]
+            [edenferreira.relational-budget.main :as main]))
 
 (defonce db
   (atom {}))

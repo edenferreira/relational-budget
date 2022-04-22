@@ -1,11 +1,11 @@
-(ns edenferreira.orcamento.dev
-  (:require [edenferreira.orcamento.main :as main]
+(ns edenferreira.relational-budget.dev
+  (:require [edenferreira.relational-budget.main :as main]
             [edenferreira.rawd.persistence :as rawd.persitence]
-            [br.com.orcamento :as-alias orc]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.entry :as-alias entry]
+            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.entry :as-alias entry]
             [edenferreira.rawd.instant :as instant])
   (:import [java.time Instant]
            [java.time.temporal ChronoUnit]))

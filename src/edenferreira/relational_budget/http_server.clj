@@ -1,17 +1,17 @@
-(ns edenferreira.orcamento.http-server
+(ns edenferreira.relational-budget.http-server
   (:require [io.pedestal.http :as http]
             [io.pedestal.http.route :as route]
             [io.pedestal.http.content-negotiation :as conneg]
             [io.pedestal.http.body-params :as body-params]
-            [br.com.orcamento :as-alias orc]
-            [br.com.orcamento.budget :as-alias budget]
-            [br.com.orcamento.category :as-alias category]
-            [br.com.orcamento.account :as-alias account]
-            [br.com.orcamento.entry :as-alias entry]
+            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget.budget :as-alias budget]
+            [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.account :as-alias account]
+            [br.com.relational-budget.entry :as-alias entry]
             [clojure.data.json :as json]
             [edenferreira.rawd.api :as rawd]
-            [edenferreira.orcamento.main :as main]
-            [edenferreira.orcamento.derived-relations :as derived-rels])
+            [edenferreira.relational-budget.main :as main]
+            [edenferreira.relational-budget.derived-relations :as derived-rels])
   (:import [java.time Instant]))
 
 (defn make-handler-catch-invalid-state [f]
