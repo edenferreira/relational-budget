@@ -1,5 +1,5 @@
 (ns edenferreira.relational-budget.derived-relations
-  (:require [br.com.relational-budget :as-alias orc]
+  (:require [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]
@@ -93,22 +93,22 @@
 
 (comment
   (accounts-with-balances
-   (::orc/accounts @edenferreira.relational-budget.main/db)
-   (::orc/entries @edenferreira.relational-budget.main/db))
+   (::rebu/accounts @edenferreira.relational-budget.main/db)
+   (::rebu/entries @edenferreira.relational-budget.main/db))
   (categories-with-balances
-   (::orc/categories @edenferreira.relational-budget.main/db)
-   (::orc/entries @edenferreira.relational-budget.main/db))
+   (::rebu/categories @edenferreira.relational-budget.main/db)
+   (::rebu/entries @edenferreira.relational-budget.main/db))
   (budgets-with-balances
-   (::orc/budgets @edenferreira.relational-budget.main/db)
-   (::orc/entries @edenferreira.relational-budget.main/db))
+   (::rebu/budgets @edenferreira.relational-budget.main/db)
+   (::rebu/entries @edenferreira.relational-budget.main/db))
   (entries-on-days
    #{{::entry/day (java.time.Instant/parse "2022-04-10T00:00:00Z")}}
-   (::orc/entries @edenferreira.relational-budget.main/db))
+   (::rebu/entries @edenferreira.relational-budget.main/db))
   (entries-on-days
    #{{::entry/day (java.time.Instant/parse "2022-04-18T00:00:00Z")}}
-   (::orc/entries @edenferreira.relational-budget.main/db))
-  (entries-balances-by-days (::orc/entries @edenferreira.relational-budget.main/db))
-  (accounts-balances-by-days (::orc/accounts @edenferreira.relational-budget.main/db)
-                             (::orc/entries @edenferreira.relational-budget.main/db))
+   (::rebu/entries @edenferreira.relational-budget.main/db))
+  (entries-balances-by-days (::rebu/entries @edenferreira.relational-budget.main/db))
+  (accounts-balances-by-days (::rebu/accounts @edenferreira.relational-budget.main/db)
+                             (::rebu/entries @edenferreira.relational-budget.main/db))
 
   '_)

@@ -1,5 +1,5 @@
 (ns edenferreira.relational-budget.balances
-  (:require [br.com.relational-budget :as-alias orc]
+  (:require [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]

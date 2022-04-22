@@ -1,6 +1,6 @@
 (ns edenferreira.relational-budget.integration
   (:require [clojure.test :refer [deftest testing is]]
-            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]
@@ -30,7 +30,7 @@
                               :as-of as-of))]
     (is (match?
          (m/match-with [map? m/equals]
-          #::orc{:budgets
+          #::rebu{:budgets
                  #{#::budget{:name "my budget"
                              :created-at as-of}}
                  :categories

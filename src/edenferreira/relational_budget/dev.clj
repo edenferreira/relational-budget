@@ -1,7 +1,7 @@
 (ns edenferreira.relational-budget.dev
   (:require [edenferreira.relational-budget.main :as main]
             [edenferreira.rawd.persistence :as rawd.persitence]
-            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]
@@ -20,8 +20,8 @@
   (swap! now #(.plus % 7 tick)))
 
 (comment
-  (swap! main/db empty)
   (do "base"
+  (swap! main/db empty)
       (main/create-budget
        :id (random-uuid)
        :name "my budget"
@@ -37,6 +37,11 @@
       (main/create-category
        :id (random-uuid)
        :name "rent"
+       :as-of (tick-forward!))
+      (main/create-assignment
+       :id (random-uuid)
+       :amount 350M
+       :category "rent"
        :as-of (tick-forward!))
       (main/create-account
        :id (random-uuid)

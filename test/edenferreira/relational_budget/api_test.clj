@@ -1,7 +1,7 @@
 (ns edenferreira.relational-budget.api-test
   (:require [clojure.test :refer [deftest testing is]]
             [edenferreira.relational-budget.domain :as domain]
-            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]
@@ -15,7 +15,7 @@
        (m/match-with [m/equals]
                      (let [budget #::budget{:name "some budget"
                                             :created-at #inst "2000-01-01T00:00:00Z"}]
-                       #::orc{:budgets #{budget}}))
+                       #::rebu{:budgets #{budget}}))
        (api/create-budget
         {}
         :name "some budget"
@@ -25,7 +25,7 @@
   (is (match?
        (let [category #::category{:name "category name"
                                   :created-at #inst "2000-01-01T00:00:00Z"}]
-         #::orc{:categories #{category}})
+         #::rebu{:categories #{category}})
        (api/create-category
         {}
         :name "category name"
@@ -38,7 +38,7 @@
                                               :type ::account/checking
                                               :initial-balance 1000M
                                               :created-at #inst "2000-01-01T00:00:00Z"}]
-                       #::orc{:accounts #{account}}))
+                       #::rebu{:accounts #{account}}))
        (api/create-account
         {}
         :name "account name"
@@ -56,9 +56,9 @@
                                           ::budget/name "name of budget"
                                           ::category/name "name of category"
                                           ::account/name "name of account"}]
-                       #::orc{:entries #{entry}}))
+                       #::rebu{:entries #{entry}}))
        (api/add-entry
-        #::orc{:budgets #{#::budget{:name "name of budget"}}
+        #::rebu{:budgets #{#::budget{:name "name of budget"}}
                :categories #{#::category{:name "name of category"}}
                :accounts #{#::account{:name "name of account"}}}
         :type ::entry/credit

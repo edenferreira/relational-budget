@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest testing is] :as t]
             [edenferreira.relational-budget.generators :as generators]
             [edenferreira.relational-budget.domain :as domain]
-            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]
@@ -23,7 +23,7 @@
 (t/use-fixtures :once #(do (stest/instrument) (%) (stest/unstrument)))
 
 (s/fdef derived-relations/accounts-with-balances
-  :args (s/cat :accounts ::orc/accounts
+  :args (s/cat :accounts ::rebu/accounts
                :entries
                (s/coll-of (s/keys :req [::entry/amount
                                         ::entry/type

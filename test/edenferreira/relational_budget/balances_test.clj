@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest testing is]]
             [edenferreira.relational-budget.generators :as generators]
             [edenferreira.relational-budget.domain :as domain]
-            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]

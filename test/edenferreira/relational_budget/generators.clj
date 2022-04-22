@@ -1,7 +1,7 @@
 (ns edenferreira.relational-budget.generators
   (:require [clojure.set :as set]
             [edenferreira.relational-budget.domain :as domain]
-            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]
@@ -10,16 +10,16 @@
             [clojure.alpha.spec :as s]))
 
 (defn one-account []
-  (s/gen (s/select ::orc/account [*])))
+  (s/gen (s/select ::rebu/account [*])))
 
 (defn one-category []
-  (s/gen (s/select ::orc/category [*])))
+  (s/gen (s/select ::rebu/category [*])))
 
 (defn one-budget []
-  (s/gen (s/select ::orc/budget [*])))
+  (s/gen (s/select ::rebu/budget [*])))
 
 (defn one-entry []
-  (s/gen (s/select ::orc/entry [*])))
+  (s/gen (s/select ::rebu/entry [*])))
 
 (defn one-entry-with-specific-type [type]
   (gen/fmap #(assoc % ::entry/type type) (one-entry)))
@@ -114,20 +114,20 @@
                                                              entries)
                      (many-budgets)))]
        (gen/hash-map
-        ::orc/accounts accounts
-        ::orc/categories categories
-        ::orc/budgets budgets
-        ::orc/entries (gen/return entries))))))
+        ::rebu/accounts accounts
+        ::rebu/categories categories
+        ::rebu/budgets budgets
+        ::rebu/entries (gen/return entries))))))
 
 (comment
   (gen/generate (entire-setup))
 
-  (let [entries (::orc/entries (gen/generate (db)))]
+  (let [entries (::rebu/entries (gen/generate (db)))]
     {:entries-count (count entries)
      :accounts (set/project entries [::account/name
                                      ::category/name
                                      ::budget/name])})
-  (let [entries (::orc/entries (gen/generate (entire-setup)))]
+  (let [entries (::rebu/entries (gen/generate (entire-setup)))]
     {:entries-count (count entries)
      :accounts (set/project entries [::account/name
                                      ::category/name

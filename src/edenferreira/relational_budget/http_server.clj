@@ -3,11 +3,12 @@
             [io.pedestal.http.route :as route]
             [io.pedestal.http.content-negotiation :as conneg]
             [io.pedestal.http.body-params :as body-params]
-            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]
             [br.com.relational-budget.entry :as-alias entry]
+            [br.com.relational-budget.assignment :as-alias assignment]
             [clojure.data.json :as json]
             [edenferreira.rawd.api :as rawd]
             [edenferreira.relational-budget.main :as main]
@@ -50,6 +51,15 @@
                 :name name
                 :as-of (Instant/now)})
     :handler (make-handler-catch-invalid-state main/create-category)}
+   {:name :assigment
+    :attributes {:category {:type "text"}
+                 :amount {:type "number"}}
+    :adapter (fn [{:keys [category amount]}]
+               {:id (random-uuid)
+                :category category
+                :amount (bigdec amount)
+                :as-of (Instant/now)})
+    :handler (make-handler-catch-invalid-state main/create-assignment)}
    {:name :entry
     :attributes {:amount {:type "number"}
                  :type {:type "select"
@@ -95,34 +105,36 @@
 (defn get-state! []
   (let [state @main/db]
     (-> state
-        (update ::orc/entries (partial sort-by ::entry/when))
-        (update ::orc/accounts (partial sort-by ::account/created-at))
-        (update ::orc/categories (partial sort-by ::category/created-at))
-        (update ::orc/budgets (partial sort-by ::budget/created-at))
-        (assoc ::orc/accounts-with-balances
+        (update ::rebu/entries (partial sort-by ::entry/when))
+        (update ::rebu/accounts (partial sort-by ::account/created-at))
+        (update ::rebu/categories (partial sort-by ::category/created-at))
+        (update ::rebu/budgets (partial sort-by ::budget/created-at))
+        (update ::rebu/assigments (partial sort-by ::assignment/created-at))
+        (assoc ::rebu/accounts-with-balances
                (sort-by ::account/created-at
                         (derived-rels/accounts-with-balances
-                         (::orc/accounts state)
-                         (::orc/entries state)))
-               ::orc/categories-with-balances
+                         (::rebu/accounts state)
+                         (::rebu/entries state)))
+               ::rebu/categories-with-balances
                (sort-by ::category/created-at
                         (derived-rels/categories-with-balances
-                         (::orc/categories state)
-                         (::orc/entries state)))
-               ::orc/budgets-with-balances
+                         (::rebu/categories state)
+                         (::rebu/assignments state)
+                         (::rebu/entries state)))
+               ::rebu/budgets-with-balances
                (sort-by ::budget/created-at
                         (derived-rels/budgets-with-balances
-                         (::orc/budgets state)
-                         (::orc/entries state)))
-               ::orc/accounts-balances-by-days
+                         (::rebu/budgets state)
+                         (::rebu/entries state)))
+               ::rebu/accounts-balances-by-days
                (sort-by ::account/day
                         (derived-rels/accounts-balances-by-days
-                         (::orc/accounts state)
-                         (::orc/entries state)))
-               ::orc/entries-balances-by-days
+                         (::rebu/accounts state)
+                         (::rebu/entries state)))
+               ::rebu/entries-balances-by-days
                (sort-by ::entry/day
                         (derived-rels/entries-balances-by-days
-                         (::orc/entries state)))))))
+                         (::rebu/entries state)))))))
 
 (def routes
   (route/expand-routes

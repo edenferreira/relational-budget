@@ -1,7 +1,8 @@
 (ns edenferreira.relational-budget.api
-  (:require [br.com.relational-budget :as-alias orc]
+  (:require [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
+            [br.com.relational-budget.assignment :as-alias assignment]
             [br.com.relational-budget.account :as-alias account]
             [br.com.relational-budget.entry :as-alias entry]))
 
@@ -11,7 +12,7 @@
                          :name name
                          :created-at as-of}]
     (-> db
-        (update ::orc/budgets (fnil conj #{}) budget))))
+        (update ::rebu/budgets (fnil conj #{}) budget))))
 
 (defn create-category [db & {:keys [id name as-of]}]
   (let [category
@@ -19,7 +20,16 @@
                     :name name
                     :created-at as-of}]
     (-> db
-        (update ::orc/categories (fnil conj #{}) category))))
+        (update ::rebu/categories (fnil conj #{}) category))))
+
+(defn create-assignment [db & {:keys [id amount category as-of]}]
+  (let [assignment
+        #::assignment{:id id
+                      :amount amount
+                      ::category/name category
+                      :created-at as-of}]
+    (-> db
+        (update ::rebu/assignments (fnil conj #{}) assignment))))
 
 (defn create-account [db & {:keys [id name type initial-balance as-of]}]
   (let [account
@@ -29,7 +39,7 @@
                    :initial-balance initial-balance
                    :created-at as-of}]
     (-> db
-        (update ::orc/accounts (fnil conj #{}) account))))
+        (update ::rebu/accounts (fnil conj #{}) account))))
 
 (defn add-entry [db
                  & {:keys [id
@@ -49,4 +59,4 @@
                        ::category/name category
                        ::account/name account}]
     (-> db
-        (update ::orc/entries (fnil conj #{}) entry))))
+        (update ::rebu/entries (fnil conj #{}) entry))))

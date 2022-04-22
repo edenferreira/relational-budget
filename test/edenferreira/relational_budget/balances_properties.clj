@@ -2,7 +2,7 @@
   (:require [clojure.test :refer [deftest is]]
             [edenferreira.relational-budget.generators :as generators]
             [edenferreira.relational-algebra.extensions :as rel]
-            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]
@@ -17,7 +17,7 @@
             [clojure.alpha.spec :as s]))
 
 (def all-credit-entries-always-negative-balance
-  (prop/for-all [{::orc/keys [entries accounts]}
+  (prop/for-all [{::rebu/keys [entries accounts]}
                  (gen/let [entries (gen/fmap (partial
                                               rel/extend
                                               ::entry/type
@@ -29,7 +29,7 @@
                                       ::account/initial-balance
                                       (constantly 0M))
                                      (generators/many-accounts-from-entries entries))]
-                   #::orc{:entries entries
+                   #::rebu{:entries entries
                           :accounts accounts})]
                 (every? (fn [{::account/keys [name]}]
                           ((some-fn zero? neg?)
@@ -47,7 +47,7 @@
             all-credit-entries-always-negative-balance))))
 
 (def all-debit-entries-always-positive-balance
-  (prop/for-all [{::orc/keys [entries accounts]}
+  (prop/for-all [{::rebu/keys [entries accounts]}
                  (gen/let [entries (gen/fmap (partial
                                               rel/extend
                                               ::entry/type
@@ -59,7 +59,7 @@
                                       ::account/initial-balance
                                       (constantly 0M))
                                      (generators/many-accounts-from-entries entries))]
-                   #::orc{:entries entries
+                   #::rebu{:entries entries
                           :accounts accounts})]
                 (every? (fn [{::account/keys [name]}]
                           ((some-fn zero? pos?)
@@ -89,6 +89,6 @@
                         ::account/initial-balance
                         (constantly 0M))
                        (generators/many-accounts-from-entries entries))]
-     #::orc{:entries entries
+     #::rebu{:entries entries
             :accounts accounts}))
   '_)

@@ -1,6 +1,6 @@
 (ns edenferreira.relational-budget.main
   (:require [edenferreira.relational-budget.integrity :as integrity]
-            [br.com.relational-budget :as-alias orc]
+            [br.com.relational-budget :as-alias rebu]
             [br.com.relational-budget.budget :as-alias budget]
             [br.com.relational-budget.category :as-alias category]
             [br.com.relational-budget.account :as-alias account]
@@ -28,6 +28,9 @@
 
 (defn create-category [& {:as m}]
   (swap! db api/create-category m))
+
+(defn create-assignment [& {:as m}]
+  (swap! db api/create-assignment m))
 
 (defn create-account [& {:as m}]
   (swap! db api/create-account m))
