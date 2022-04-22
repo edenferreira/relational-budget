@@ -26,6 +26,7 @@
         {:status 400
          :body {:invalid-input input}}))))
 
+;; TODO add filter key
 (def entities
   [{:name :budget
     :attributes {:name {:type "text"}}
