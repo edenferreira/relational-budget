@@ -152,7 +152,10 @@
 
         [:hr]
         [:h1 {:class "text-success"} "State"]
-        (db->table (get-state))]]))))
+        (db->table (if (get-in request [:params :as-of])
+                     (get-state :as-of (get-in request [:params :as-of]))
+                     ;; TODO document that it needs to receive key values
+                     (get-state)))]]))))
 
 (defn create-respond-index [get-state entities]
   (let [index (create-index get-state entities)]

@@ -12,7 +12,9 @@
             [clojure.data.json :as json]
             [edenferreira.rawd.api :as rawd]
             [edenferreira.relational-budget.main :as main]
-            [edenferreira.relational-budget.derived-relations :as derived-rels])
+            [edenferreira.relational-budget.derived-relations :as derived-rels]
+            [clojure.set :as set]
+            [edenferreira.rawd.instant :as instant])
   (:import [java.time Instant]))
 
 (defn make-handler-catch-invalid-state [f]
@@ -102,8 +104,21 @@
                                 (assoc :body coerced-body))]
        (assoc context :response updated-response)))})
 
-(defn get-state! []
-  (let [state @main/db]
+(defn get-state! [ & {:keys [as-of]}]
+  (let [state (if (doto as-of println)
+                (-> @main/db
+                    (update ::rebu/entries (partial set/select #(.isBefore (::entry/when %) as-of)))
+                    (update ::rebu/accounts (partial set/select #(.isBefore (::account/created-at %)
+                                                                            as-of)))
+                    (update ::rebu/categories
+                            (partial set/select #(.isBefore (::category/created-at %)
+                                                            as-of)))
+                    (update ::rebu/budgets
+                            (partial set/select #(.isBefore (::budget/created-at %) as-of)))
+                    (update ::rebu/assignments
+                            (partial set/select #(.isBefore (::assignment/created-at %) as-of))))
+                @main/db)]
+
     (-> state
         (update ::rebu/entries (partial sort-by ::entry/when))
         (update ::rebu/accounts (partial sort-by ::account/created-at))
@@ -173,7 +188,9 @@
   (start-dev))
 
 (comment
-  (get-state!)
+  (get-state!
+   :as-of (instant/parse "1999-01-03T02:00:00Z"))
+(instant/parse "2000-01-03T02:00:00Z")
   (start-dev)
   (restart)
   (rawd/entities->forms entities)
