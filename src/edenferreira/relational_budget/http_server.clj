@@ -11,6 +11,7 @@
             [br.com.relational-budget.assignment :as-alias assignment]
             [clojure.data.json :as json]
             [edenferreira.rawd.api :as rawd]
+            [edenferreira.rawd :as-alias rwd]
             [edenferreira.relational-budget.main :as main]
             [edenferreira.relational-budget.derived-relations :as derived-rels]
             [clojure.set :as set]
@@ -25,6 +26,122 @@
       (catch java.lang.IllegalStateException _e
         {:status 400
          :body {:invalid-input input}}))))
+
+(def definition
+  {::rwd/entities
+   #{#::rwd{:entity :account
+            :adapter (fn [{:keys [name type initial-balance]}]
+                       {:id (random-uuid)
+                        :name name
+                        :type type
+                        :initial-balance (or (bigdec initial-balance) 0M)
+                        :as-of (Instant/now)})
+            :handler (make-handler-catch-invalid-state main/create-account)}
+     #::rwd{:entity :category
+            :adapter (fn [{:keys [name]}]
+                       {:id (random-uuid)
+                        :name name
+                        :as-of (Instant/now)})
+            :handler (make-handler-catch-invalid-state main/create-category)}
+     #::rwd{:entity :entry
+            :adapter (fn
+                       [{:keys [amount type other-party budget account category]}]
+                       {:id (random-uuid)
+                        :amount (bigdec amount)
+                        :type (case
+                                  type
+                                "credit"
+                                :br.com.relational-budget.entry/credit
+                                "debit"
+                                :br.com.relational-budget.entry/debit)
+                        :other-party other-party
+                        :as-of (Instant/now)
+                        :budget budget
+                        :account account
+                        :category category})
+            :handler (make-handler-catch-invalid-state main/add-entry)}
+     #::rwd{:entity :budget
+            :adapter (fn [{:keys [name]}]
+                       {:id (random-uuid)
+                        :name name
+                        :as-of (Instant/now)})
+            :handler (make-handler-catch-invalid-state main/create-budget)}
+     #::rwd{:entity :assigment
+            :adapter (fn [{:keys [category amount]}]
+                       {:id (random-uuid)
+                        :category category
+                        :amount (bigdec amount)
+                        :as-of (Instant/now)})
+            :handler (make-handler-catch-invalid-state main/create-assignment)}}
+   ::rwd/attributes
+   #{#::rwd{:attribute :entry-budget
+            :type "text"
+            :entity :entry}
+     #::rwd{:attribute :assigment-category
+            :type "text"
+            :entity :assigment}
+     #::rwd{:attribute :entry-account
+            :type "text"
+            :entity :entry}
+     #::rwd{:attribute :entry-amount
+            :type "number"
+            :entity :entry}
+     #::rwd{:attribute :category-name
+            :type "text"
+            :entity :category}
+     #::rwd{:attribute :entry-type
+            :type "select"
+            :entity :entry
+            :select-options ["credit" "debit"]}
+     #::rwd{:attribute :assigment-amount
+            :type "number"
+            :entity :assigment}
+     #::rwd{:attribute :account-name
+            :type "text"
+            :entity :account}
+     #::rwd{:attribute :budget-name
+            :type "text"
+            :entity :budget}
+     #::rwd{:attribute :account-type
+            :type "select"
+            :entity :account
+            :select-options ["checking" "savings"]}
+     #::rwd{:attribute :account-initial-balance
+            :type "number"
+            :entity :account}
+     #::rwd{:attribute :entry-other-party
+            :type "text"
+            :entity :entry}
+     #::rwd{:attribute :entry-category
+            :type "text"
+            :entity :entry}}})
+
+(comment
+  (-> entities
+      (->>
+       (mapcat (fn [{:keys [name attributes]}]
+              (map (fn [[n v]]
+                     (cond->
+                         #::rawd{:name (keyword
+                                        (str (clojure.core/name name)
+                                             "-"
+                                             (clojure.core/name n)))
+                                 :type (:type v)
+                                 :entity name}
+                       (:options v) (assoc ::rawd/select-options (:options v))
+                       ))
+                   attributes)))
+set))
+
+  (-> entities
+      (->>
+       (map (fn [{:keys [name adapter handler]}]
+              #::rawd{:name name
+                      :adapter adapter
+                      :handler handler}))
+
+set))
+  )
 
 ;; TODO add filter key
 (def entities
@@ -156,7 +273,8 @@
   (route/expand-routes
    (rawd/routes [(body-params/body-params) coerce-body content-neg-intc]
                 get-state!
-                entities)))
+                entities
+                definition)))
 
 (defn create-server []
   (http/create-server
@@ -193,7 +311,13 @@
    :as-of (instant/parse "1999-01-03T02:00:00Z"))
 (instant/parse "2000-01-03T02:00:00Z")
   (start-dev)
-  (restart)
+  (do
+    (portal/clear)
+    (restart))
+  (edenferreira.rawd.view/entities->forms2
+   (::rwd/entities definition)
+   (::rwd/attributes definition)
+   )
   (do (require 'edev)
       (edev/e-la-vamos-nos))
   (def p (portal/open))

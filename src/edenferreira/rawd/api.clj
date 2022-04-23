@@ -1,20 +1,22 @@
 (ns ^{:doc "CRUD for development"}
-    edenferreira.rawd.api
+ edenferreira.rawd.api
   (:require [clojure.string :as str]
             [hiccup.page :as h.page]
             [hiccup.core :as h]
+            [edenferreira.rawd :as-alias rwd]
             [edenferreira.rawd.instant :as instant]
             [edenferreira.rawd.view :as view]
             [clojure.set :as set]
             [clojure.string :as string]))
 
-(defn create-index [get-state entities]
+(defn create-index [get-state entities definition]
   (fn index [request]
     (h.page/html5
      {}
      (h/html
       (view/index
-       (cond-> {:entities entities}
+       (cond-> (merge {:entities entities}
+                      definition)
          (::as-of request)
          (assoc :as-of (::as-of request)
                 :state (get-state :as-of (::as-of request)))
@@ -22,8 +24,8 @@
          (nil? (::as-of request))
          (assoc :state (get-state))))))))
 
-(defn create-respond-index [get-state entities]
-  (let [index (create-index get-state entities)]
+(defn create-respond-index [get-state entities definition]
+  (let [index (create-index get-state entities definition)]
     (fn respond-index [request]
       {:status 200 :body (index request)})))
 
@@ -70,17 +72,25 @@
                              (string/ends-with? as-of "Z"))
                         (assoc ::as-of (instant/parse as-of))))))})
 
-(defn routes [interceptors get-state entities]
+(defn routes [interceptors get-state entities definition]
   (let [interceptors (conj interceptors as-of-interceptor)]
     (set/union
-     #{["/" :get (conj interceptors (create-respond-index get-state entities)) :route-name :index]
-       ["/index.html" :get (conj interceptors (create-respond-index get-state entities)) :route-name :index-html]
-       ["/filter/as-of" :post (conj interceptors
-                                    (fn [request]
-                                      {:status 303
-                                       :headers {"Location" (str "/?as-of=" (str (get (:params request) "as-of")
-                                                                                 ":00Z"))}
-                                       :body {}}))
+     #{["/" :get (conj interceptors
+                       (create-respond-index get-state entities definition))
+        :route-name :index]
+       ["/index.html" :get (conj interceptors
+                                 (create-respond-index get-state entities definition))
+        :route-name :index-html]
+       ["/filter/as-of" :post
+        (conj interceptors
+              (fn [request]
+                {:status 303
+                 :headers
+                 {"Location"
+                  (str "/?as-of="
+                       (str (get (:params request) "as-of")
+                            ":00Z"))}
+                 :body {}}))
         :route-name :filter-as-of]}
      (entities->routes interceptors entities))))
 

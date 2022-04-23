@@ -1,4 +1,9 @@
-(ns edenferreira.rawd.view)
+(ns edenferreira.rawd.view
+  (:require [edenferreira.rawd :as-alias rwd]
+            [clojure.set :as set]
+            [edenferreira.clojure.set.extensions :as set.ext]
+            [clojure.string :as string]
+            [clojure.alpha.spec :as s]))
 
 ;; slightly modified from https://stackoverflow.com/questions/12679754/idiomatic-way-of-rendering-style-info-using-clojure-hiccup
 (defn style [& info]
@@ -70,48 +75,60 @@
                            :margin-bottom "8px")}
     button-label]])
 
-(defn entity->form [& {:keys [name attributes]}]
-  (let [form-id (str (clojure.core/name name)
-                     "form")]
-    (create-form
-     :id form-id
-     :enctype "application/x-www-form-urlencoded"
-     :method "POST"
-     :action (str "/" (clojure.core/name name) "/create")
-     :items (map
-             (fn [[attr {:keys [type] :as opt}]]
-               (case type
-                 "select"
-                 (create-select-input :id (str (clojure.core/name name)
-                                               "-"
-                                               (clojure.core/name attr))
-                                      :form form-id
-                                      :label (str (clojure.core/name name)
-                                                  " "
-                                                  (clojure.core/name attr))
-                                      :name (str (clojure.core/name name)
-                                                 "-"
-                                                 (clojure.core/name attr))
-                                      opt)
-                 (create-input :id (str (clojure.core/name name)
-                                        "-"
-                                        (clojure.core/name attr))
-                               :form form-id
-                               :type type
-                               :label (str (clojure.core/name name)
-                                           " "
-                                           (clojure.core/name attr))
-                               :name (str (clojure.core/name name)
-                                          "-"
-                                          (clojure.core/name attr)))))
-             attributes)
-     :button-label (str "Create "
-                        (clojure.core/name name)))))
+(defn entities->forms [entities attributes]
+  (let [entities (set.ext/extend
+                  entities
+                   :form/id (comp (partial str "form") name ::rwd/entity)
+                   :form/enctype (constantly "application/x-www-form-urlencoded")
+                   :form/method (constantly "POST")
+                   :form/action (comp #(str "/" % "/create") name ::rwd/entity)
+                   :form/button-label (comp (partial str "Create ") name ::rwd/entity))
+        attributes (set.ext/extend
+                    attributes
+                       ;; TODO change rwd/nama to rwd/attribute
+                     :input/id (comp name ::rwd/attribute)
+                     :input/label (comp #(string/replace % "-" " ") name ::rwd/attribute)
+                     :input/name (comp name ::rwd/attribute)
+                     :input/type ::rwd/type)]
+    (set.ext/extend
+     (set.ext/summarize
+      (set.ext/extend
+       (set.ext/extend
+        (set/join entities attributes)
+         :input/form :form/id)
+        :input/html
+        (fn [{:input/keys [id form label name type]
+              ::rwd/keys [select-options]}]
+          (case type
+            "select"
+            (create-select-input :id id
+                                 :form form
+                                 :label label
+                                 :name name
+                                 :options select-options)
+            (create-input :id id
+                          :form form
+                          :type type
+                          :label label
+                          :name name))))
+      [:form/id
+       :form/enctype
+       :form/method
+       :form/action
+       :form/button-label]
+      :form/items (fn [rel] (map :input/html rel)))
+      :form/html
+      (fn [{:form/keys [id enctype method action button-label items]}]
+        (create-form
+         :id id
+         :enctype enctype
+         :method method
+         :action action
+         :items items
+         :button-label button-label)))))
 
-(defn entities->forms [entities]
-  [:div {:class "row"} (map entity->form entities)])
-
-(defn index [& {:keys [entities as-of state]}]
+(defn index [& {:keys [as-of state]
+                ::rwd/keys [entities attributes]}]
   (list
    [:head [:title "RAWD"]
     [:link {:rel "stylesheet"
@@ -121,7 +138,8 @@
    [:body
     [:div {:class "container"}
      [:h1 {:class ""} "Rawd"]
-     (entities->forms entities)
+     [:div {:class "row"}
+      (map :form/html (entities->forms entities attributes))]
      [:hr]
      [:h1 {:class "text-success"} "Filters"]
      (let [form-id "as-of-filter-form"]
