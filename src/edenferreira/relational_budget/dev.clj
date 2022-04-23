@@ -55,7 +55,7 @@
        :type "savings"
        :initial-balance 0M
        :as-of (tick-forward!)))
-  (do
+  (do "entries"
     (main/add-entry
      :id (random-uuid)
      :type ::entry/debit

@@ -194,5 +194,8 @@
 (instant/parse "2000-01-03T02:00:00Z")
   (start-dev)
   (restart)
+  (do (require 'edev)
+      (edev/e-la-vamos-nos))
+  (def p (portal/open))
   (rawd/entities->forms entities)
   (route/try-routing-for routes :prefix-tree "/greet" :get))

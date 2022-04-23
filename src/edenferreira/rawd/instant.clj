@@ -7,3 +7,5 @@
 
 (defn parse ^Instant [s]
   (Instant/parse s))
+
+(defn now [] (Instant/now))
