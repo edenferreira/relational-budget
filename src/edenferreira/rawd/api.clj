@@ -8,21 +8,29 @@
             [edenferreira.rawd.view :as view]
             [clojure.set :as set]
             [clojure.string :as string]
-            [edenferreira.clojure.set.extensions :as set.ext]))
+            [edenferreira.clojure.set.extensions :as set.ext]
+            [edenferreira.rawd.api :as rawd]))
 
 (defn create-index [get-state definition]
-  (fn index [request]
-    (h.page/html5
-     {}
-     (h/html
-      (view/index
-       (cond-> definition
-         (::as-of request)
-         (assoc :as-of (::as-of request)
-                :state (get-state :as-of (::as-of request)))
+  (let [adapt-params (->> definition
+                          ::rwd/filters
+                          (map ::rwd/adapter)
+                          (apply juxt))]
+    (fn index [request]
+      (let [params (:params request)
+            adapted (apply merge (adapt-params params))]
+        (h.page/html5
+         {}
+         (h/html
+          (view/index
+           (cond-> definition
+             (::as-of request)
+             (assoc :as-of (::as-of request)
+                    :state (get-state :as-of (::as-of request)
+                                      adapted))
 
-         (nil? (::as-of request))
-         (assoc :state (get-state))))))))
+             (nil? (::as-of request))
+             (assoc :state (get-state adapted))))))))))
 
 (defn create-respond-index [get-state definition]
   (let [index (create-index get-state definition)]
@@ -90,6 +98,23 @@
        ["/index.html" :get (conj interceptors
                                  (create-respond-index get-state definition))
         :route-name :index-html]
+       ["/filter/attributes" :post
+        (conj interceptors
+              (fn [request]
+                (let [params (update-keys
+                              (get request :params)
+                              #(string/replace %
+                                               "filter-"
+                                               ""))]
+                  {:status 303
+                   :headers
+                   {"Location"
+                    (str "/?"
+                         (->> params
+                              (map (partial string/join "="))
+                              (string/join "&")))}
+                   :body {}})))
+        :route-name :filter-attributes]
        ["/filter/as-of" :post
         (conj interceptors
               (fn [request]

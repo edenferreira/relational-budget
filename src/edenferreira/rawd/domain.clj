@@ -23,3 +23,9 @@
                  ::rwd/entity]
            :opt [::rwd/select-options])
    :kind set))
+
+(s/def ::rwd/filters
+  (s/coll-of
+   (s/keys :req [::rwd/attribute
+                 ::rwd/adapter])
+   :kind set))

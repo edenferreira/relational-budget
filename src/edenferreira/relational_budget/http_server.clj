@@ -115,7 +115,11 @@
             :entity :entry}
      #::rwd{:attribute :entry-category
             :type "text"
-            :entity :entry}}})
+            :entity :entry}}
+   ::rwd/filters
+   #{#::rwd{:attribute :account-name
+            :adapter (fn [& {:keys [account-name]}]
+                       {::account/name account-name})}}})
 
 (def supported-types ["text/html" "application/edn" "application/json" "text/plain"])
 
@@ -138,7 +142,9 @@
                                 (assoc :body coerced-body))]
        (assoc context :response updated-response)))})
 
-(defn get-state! [ & {:keys [as-of]}]
+(defn get-state! [ & {:keys [as-of]
+                      account-name ::account/name
+                      :as i}]
   (let [state (if as-of
                 (-> @main/db
                     (update ::rebu/entries (partial set/select #(.isBefore (::entry/when %) as-of)))
@@ -151,8 +157,10 @@
                             (partial set/select #(.isBefore (::budget/created-at %) as-of)))
                     (update ::rebu/assignments
                             (partial set/select #(.isBefore (::assignment/created-at %) as-of))))
-                @main/db)]
-
+                @main/db)
+        state (cond-> state
+                account-name (update ::rebu/accounts
+                                     (partial set/join #{{::account/name account-name}})))]
     (-> state
         (update ::rebu/entries (partial sort-by ::entry/when))
         (update ::rebu/accounts (partial sort-by ::account/created-at))
@@ -222,7 +230,9 @@
   (start-dev))
 
 (comment
-  (get-state! :as-of (instant/parse "1999-01-03T02:00:00Z"))
+  (get-state! :as-of (instant/parse "2020-01-03T02:00:00Z"))
+
+  (edenferreira.relational-budget.dev/start!)
 
   (do
     (require 'edev)
@@ -234,8 +244,4 @@
     (portal/clear)
     (restart))
 
-  (edenferreira.rawd.view/entities->forms2
-   (::rwd/entities definition)
-   (::rwd/attributes definition)
-   )
   '_)

@@ -4,7 +4,8 @@
             [edenferreira.clojure.set.extensions :as set.ext]
             [edenferreira.rawd.derived-relations :as rawd.rels]
             [clojure.string :as string]
-            [clojure.alpha.spec :as s]))
+            [clojure.alpha.spec :as s]
+            [edenferreira.rawd.view :as view]))
 
 ;; slightly modified from https://stackoverflow.com/questions/12679754/idiomatic-way-of-rendering-style-info-using-clojure-hiccup
 (defn style [& info]
@@ -104,8 +105,26 @@
                          :form/items (partial map :input/html))
       (set.ext/extend :form/html create-form-html)))
 
+(defn create-as-of-filter [& {:keys [as-of]}]
+  (let [form-id "as-of-filter-form"]
+    (create-form
+     :id form-id
+     :enctype "application/x-www-form-urlencoded"
+     :method "POST"
+     :action "/filter/as-of"
+     :items [(create-datetime-input :id "as-of-filter"
+                                    :form form-id
+                                    :label "as-of"
+                                    :name "as-of"
+                                    :value (when as-of
+                                             (subs (str as-of)
+                                                   0
+                                                   (- (count (str as-of))
+                                                      4))))]
+     :button-label "Filter")))
+
 (defn index [& {:keys [as-of state]
-                ::rwd/keys [entities attributes]}]
+                ::rwd/keys [entities attributes filters]}]
   (list
    [:head [:title "RAWD"]
     [:link {:rel "stylesheet"
@@ -122,23 +141,31 @@
            (map :form/html))]
      [:hr]
      [:h1 {:class "text-success"} "Filters"]
-     (let [form-id "as-of-filter-form"]
-       (create-form
-        :id form-id
-        :enctype "application/x-www-form-urlencoded"
-        :method "POST"
-        :action "/filter/as-of"
-        :items [(create-datetime-input :id "as-of-filter"
-                                       :form form-id
-                                       :label "as-of"
-                                       :name "as-of"
-                                       :value (when as-of
-                                                (subs (str as-of)
-                                                      0
-                                                      (- (count (str as-of))
-                                                         4))))]
-        :button-label "Filter"))
-
+     [:div {:class "row"}
+      (create-as-of-filter :as-of as-of)
+      (map :form/html
+           (set.ext/extend
+            filters
+             :form/html
+             (fn [{::rwd/keys [attribute]}]
+               (let [attribute (name attribute)]
+                 (view/create-form
+                  :id (str "form-filter-" attribute)
+                  :enctype "application/x-www-form-urlencoded"
+                  :method "POST"
+                  :action "/filter/attributes"
+                  :button-label "Filter"
+                  :items [(create-input :id (str "filter-" attribute)
+                                        :type "text"
+                                        :name (str "filter-" attribute)
+                                        :form (str "form-filter-" attribute)
+                                        :label (str "filter " attribute))])))))
+      (view/create-form
+       :id "form-clear-filter-"
+       :enctype "application/x-www-form-urlencoded"
+       :method "GET"
+       :action "/"
+       :button-label "Clear Filters")]
      [:hr]
      [:h1 {:class "text-success"} "State"]
      (db->table state)]]))

@@ -19,9 +19,9 @@
 (defn tick-forward! []
   (swap! now #(.plus % 7 tick)))
 
-(comment
+(defn start! []
   (do "base"
-  (swap! main/db empty)
+      (swap! main/db empty)
       (main/create-budget
        :id (random-uuid)
        :name "my budget"
@@ -56,62 +56,66 @@
        :initial-balance 0M
        :as-of (tick-forward!)))
   (do "entries"
-    (main/add-entry
-     :id (random-uuid)
-     :type ::entry/debit
-     :amount 1000M
-     :other-party "my employeer"
-     :budget "my budget"
-     :account "nu"
-     :category "salary"
-     :as-of (tick-forward!))
-    (main/add-entry
-     :id (random-uuid)
-     :type ::entry/credit
-     :amount 59M
-     :other-party "eskina"
-     :budget "my budget"
-     :account "nu"
-     :category "groceries"
-     :as-of (tick-forward!))
-    (main/add-entry
-     :id (random-uuid)
-     :type ::entry/credit
-     :amount 300M
-     :other-party "sr barriga"
-     :budget "my budget"
-     :account "nu"
-     :category "rent"
-     :as-of (tick-forward!))
-    (main/add-entry
-     :id (random-uuid)
-     :type ::entry/credit
-     :amount 30M
-     :other-party "dia"
-     :budget "my budget"
-     :account "nu"
-     :category "groceries"
-     :as-of (tick-forward!))
-    (let [as-of (tick-forward!)
-          amount 200M]
-      (main/add-entry
-       :id (random-uuid)
-       :type ::entry/credit
-       :amount amount
-       :other-party "tau"
-       :budget "my budget"
-       :account "nu"
-       :category "salary"
-       :as-of as-of)
       (main/add-entry
        :id (random-uuid)
        :type ::entry/debit
-       :amount amount
-       :other-party "nu"
+       :amount 1000M
+       :other-party "my employeer"
        :budget "my budget"
-       :account "tau"
+       :account "nu"
        :category "salary"
-       :as-of as-of)))
+       :as-of (tick-forward!))
+      (main/add-entry
+       :id (random-uuid)
+       :type ::entry/credit
+       :amount 59M
+       :other-party "eskina"
+       :budget "my budget"
+       :account "nu"
+       :category "groceries"
+       :as-of (tick-forward!))
+      (main/add-entry
+       :id (random-uuid)
+       :type ::entry/credit
+       :amount 300M
+       :other-party "sr barriga"
+       :budget "my budget"
+       :account "nu"
+       :category "rent"
+       :as-of (tick-forward!))
+      (main/add-entry
+       :id (random-uuid)
+       :type ::entry/credit
+       :amount 30M
+       :other-party "dia"
+       :budget "my budget"
+       :account "nu"
+       :category "groceries"
+       :as-of (tick-forward!))
+      (let [as-of (tick-forward!)
+            amount 200M]
+        (main/add-entry
+         :id (random-uuid)
+         :type ::entry/credit
+         :amount amount
+         :other-party "tau"
+         :budget "my budget"
+         :account "nu"
+         :category "salary"
+         :as-of as-of)
+        (main/add-entry
+         :id (random-uuid)
+         :type ::entry/debit
+         :amount amount
+         :other-party "nu"
+         :budget "my budget"
+         :account "tau"
+         :category "salary"
+         :as-of as-of))))
+
+(comment
+
+
   ;; template
   #_(main/add-entry
      :id (random-uuid)
