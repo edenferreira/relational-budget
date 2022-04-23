@@ -223,7 +223,7 @@ set))
        (assoc context :response updated-response)))})
 
 (defn get-state! [ & {:keys [as-of]}]
-  (let [state (if (doto as-of println)
+  (let [state (if as-of
                 (-> @main/db
                     (update ::rebu/entries (partial set/select #(.isBefore (::entry/when %) as-of)))
                     (update ::rebu/accounts (partial set/select #(.isBefore (::account/created-at %)
