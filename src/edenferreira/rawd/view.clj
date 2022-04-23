@@ -133,39 +133,42 @@
             :crossorigin "anonymous"}]]
    [:body
     [:div {:class "container"}
-     [:h1 {:class ""} "Rawd"]
-     [:div {:class "row"}
-      (->> (entities->forms entities attributes)
-           (sort-by ::rwd/entity)
-           reverse
-           (map :form/html))]
+     [:details
+      [:summary [:span {:class "h1"} "CruD"]]
+      [:div {:class "row"}
+       (->> (entities->forms entities attributes)
+            (sort-by ::rwd/entity)
+            reverse
+            (map :form/html))]]
      [:hr]
-     [:h1 {:class "text-success"} "Filters"]
-     [:div {:class "row"}
-      (create-as-of-filter :as-of as-of)
-      (map :form/html
-           (set.ext/extend
-            filters
-             :form/html
-             (fn [{::rwd/keys [attribute]}]
-               (let [attribute (name attribute)]
-                 (view/create-form
-                  :id (str "form-filter-" attribute)
-                  :enctype "application/x-www-form-urlencoded"
-                  :method "POST"
-                  :action "/filter/attributes"
-                  :button-label "Filter"
-                  :items [(create-input :id (str "filter-" attribute)
-                                        :type "text"
-                                        :name (str "filter-" attribute)
-                                        :form (str "form-filter-" attribute)
-                                        :label (str "filter " attribute))])))))
-      (view/create-form
-       :id "form-clear-filter-"
-       :enctype "application/x-www-form-urlencoded"
-       :method "GET"
-       :action "/"
-       :button-label "Clear Filters")]
+     [:details
+      [:summary [:span {:class "h1"} "Filters"]]
+      [:div {:class "row"}
+       (create-as-of-filter :as-of as-of)
+       (map :form/html
+            (set.ext/extend
+             filters
+              :form/html
+              (fn [{::rwd/keys [attribute]}]
+                (let [attribute (name attribute)]
+                  (view/create-form
+                   :id (str "form-filter-" attribute)
+                   :enctype "application/x-www-form-urlencoded"
+                   :method "POST"
+                   :action "/filter/attributes"
+                   :button-label "Filter"
+                   :items [(create-input :id (str "filter-" attribute)
+                                         :type "text"
+                                         :name (str "filter-" attribute)
+                                         :form (str "form-filter-" attribute)
+                                         :label (str "filter " attribute))])))))
+       (view/create-form
+        :id "form-clear-filter-"
+        :enctype "application/x-www-form-urlencoded"
+        :method "GET"
+        :action "/"
+        :button-label "Clear Filters")]]
      [:hr]
-     [:h1 {:class "text-success"} "State"]
-     (db->table state)]]))
+     [:details
+      [:summary [:span {:class "h1"} "State"]]
+      (db->table state)]]]))
