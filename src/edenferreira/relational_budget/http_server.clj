@@ -27,6 +27,7 @@
         {:status 400
          :body {:invalid-input input}}))))
 
+;; TODO add filter relation
 (def definition
   {::rwd/entities
    #{#::rwd{:entity :account
@@ -116,91 +117,6 @@
             :type "text"
             :entity :entry}}})
 
-(comment
-  (-> entities
-      (->>
-       (mapcat (fn [{:keys [name attributes]}]
-              (map (fn [[n v]]
-                     (cond->
-                         #::rawd{:name (keyword
-                                        (str (clojure.core/name name)
-                                             "-"
-                                             (clojure.core/name n)))
-                                 :type (:type v)
-                                 :entity name}
-                       (:options v) (assoc ::rawd/select-options (:options v))
-                       ))
-                   attributes)))
-set))
-
-  (-> entities
-      (->>
-       (map (fn [{:keys [name adapter handler]}]
-              #::rawd{:name name
-                      :adapter adapter
-                      :handler handler}))
-
-set))
-  )
-
-;; TODO add filter key
-(def entities
-  [{:name :budget
-    :attributes {:name {:type "text"}}
-    :adapter (fn [{:keys [name]}]
-               {:id (random-uuid)
-                :name name
-                :as-of (Instant/now)})
-    :handler (make-handler-catch-invalid-state main/create-budget)}
-   {:name :account
-    :attributes {:name {:type "text"}
-                 :type {:type "select"
-                        :options ["checking" "savings"]}
-                 :initial-balance {:type "number"}}
-    :adapter (fn [{:keys [name type initial-balance]}]
-               {:id (random-uuid)
-                :name name
-                :type type
-                :initial-balance (or (bigdec initial-balance) 0M)
-                :as-of (Instant/now)})
-    :handler (make-handler-catch-invalid-state main/create-account)}
-   {:name :category
-    :attributes {:name {:type "text"}}
-    :adapter (fn [{:keys [name]}]
-               {:id (random-uuid)
-                :name name
-                :as-of (Instant/now)})
-    :handler (make-handler-catch-invalid-state main/create-category)}
-   {:name :assigment
-    :attributes {:category {:type "text"}
-                 :amount {:type "number"}}
-    :adapter (fn [{:keys [category amount]}]
-               {:id (random-uuid)
-                :category category
-                :amount (bigdec amount)
-                :as-of (Instant/now)})
-    :handler (make-handler-catch-invalid-state main/create-assignment)}
-   {:name :entry
-    :attributes {:amount {:type "number"}
-                 :type {:type "select"
-                        :options ["credit" "debit"]}
-                 :other-party {:type "text"}
-                 :budget {:type "text"}
-                 :account {:type "text"}
-                 :category {:type "text"}}
-    :adapter (fn [{:keys [amount type other-party budget account category]}]
-               {:id (random-uuid)
-                :amount (bigdec amount)
-                :type (case type
-                        "credit" ::entry/credit
-                        "debit" ::entry/debit)
-                :other-party other-party
-                :as-of (Instant/now)
-                :budget budget
-                :account account
-                :category category})
-    :handler (make-handler-catch-invalid-state main/add-entry)}])
-
 (def supported-types ["text/html" "application/edn" "application/json" "text/plain"])
 
 (def content-neg-intc (conneg/negotiate-content supported-types))
@@ -273,7 +189,6 @@ set))
   (route/expand-routes
    (rawd/routes [(body-params/body-params) coerce-body content-neg-intc]
                 get-state!
-                entities
                 definition)))
 
 (defn create-server []

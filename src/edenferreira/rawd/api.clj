@@ -7,16 +7,16 @@
             [edenferreira.rawd.instant :as instant]
             [edenferreira.rawd.view :as view]
             [clojure.set :as set]
-            [clojure.string :as string]))
+            [clojure.string :as string]
+            [edenferreira.clojure.set.extensions :as set.ext]))
 
-(defn create-index [get-state entities definition]
+(defn create-index [get-state definition]
   (fn index [request]
     (h.page/html5
      {}
      (h/html
       (view/index
-       (cond-> (merge {:entities entities}
-                      definition)
+       (cond-> definition
          (::as-of request)
          (assoc :as-of (::as-of request)
                 :state (get-state :as-of (::as-of request)))
@@ -24,8 +24,8 @@
          (nil? (::as-of request))
          (assoc :state (get-state))))))))
 
-(defn create-respond-index [get-state entities definition]
-  (let [index (create-index get-state entities definition)]
+(defn create-respond-index [get-state definition]
+  (let [index (create-index get-state definition)]
     (fn respond-index [request]
       {:status 200 :body (index request)})))
 
@@ -43,17 +43,26 @@
          :body {}}
         handled))))
 
-(defn entities->routes [interceptors entities]
+(defn entities-routes [interceptors entities]
   (set
-   (map
-    (fn [{:keys [name adapter handler]
-          :or {adapter identity
-               handler identity}}]
-      [(str "/" (clojure.core/name name) "/create")
-       :post (conj interceptors
-                   (respond-create-entity name adapter handler))
-       :route-name (keyword (str "creating-entity-" (clojure.core/name name)))])
-    entities)))
+   (map :route/route
+        (set.ext/extend
+         (set.ext/extend
+          entities
+           :route/uri (comp #(str "/" % "/create") name ::rwd/entity)
+           :route/handler (fn [{::rwd/keys [entity adapter handler]
+                                :or {adapter identity
+                                     handler identity}}]
+                            (respond-create-entity entity adapter handler))
+           :route/name (comp keyword
+                             (partial str "creating-entity-")
+                             name ::rwd/entity))
+          :route/route
+          (juxt :route/uri
+                (constantly :post)
+                (comp (partial conj interceptors) :route/handler)
+                (constantly :route-name)
+                :route/name)))))
 
 (def as-of-interceptor
   {:enter (fn [context]
@@ -72,14 +81,14 @@
                              (string/ends-with? as-of "Z"))
                         (assoc ::as-of (instant/parse as-of))))))})
 
-(defn routes [interceptors get-state entities definition]
+(defn routes [interceptors get-state definition]
   (let [interceptors (conj interceptors as-of-interceptor)]
     (set/union
      #{["/" :get (conj interceptors
-                       (create-respond-index get-state entities definition))
+                       (create-respond-index get-state definition))
         :route-name :index]
        ["/index.html" :get (conj interceptors
-                                 (create-respond-index get-state entities definition))
+                                 (create-respond-index get-state definition))
         :route-name :index-html]
        ["/filter/as-of" :post
         (conj interceptors
@@ -92,7 +101,7 @@
                             ":00Z"))}
                  :body {}}))
         :route-name :filter-as-of]}
-     (entities->routes interceptors entities))))
+     (set (map :route/route (entities-routes interceptors (::rwd/entities definition)))))))
 
 (comment
   (->> (db->table {:c #{{:a 1 :b 2}
