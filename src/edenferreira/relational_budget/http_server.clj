@@ -27,7 +27,6 @@
         {:status 400
          :body {:invalid-input input}}))))
 
-;; TODO add filter relation
 (def definition
   {::rwd/entities
    #{#::rwd{:entity :account
@@ -119,7 +118,13 @@
    ::rwd/filters
    #{#::rwd{:attribute :account-name
             :adapter (fn [& {:keys [account-name]}]
-                       {::account/name account-name})}}})
+                       {::account/name account-name})}
+     #::rwd{:attribute :budget-name
+            :adapter (fn [& {:keys [budget-name]}]
+                       {::budget/name budget-name})}
+     #::rwd{:attribute :category-name
+            :adapter (fn [& {:keys [category-name]}]
+                       {::category/name category-name})}}})
 
 (def supported-types ["text/html" "application/edn" "application/json" "text/plain"])
 
@@ -144,7 +149,9 @@
 
 (defn get-state! [ & {:keys [as-of]
                       account-name ::account/name
-                      :as i}]
+                      category-name ::category/name
+                      budget-name  ::budget/name}]
+
   (let [state (if as-of
                 (-> @main/db
                     (update ::rebu/entries (partial set/select #(.isBefore (::entry/when %) as-of)))
@@ -160,7 +167,17 @@
                 @main/db)
         state (cond-> state
                 account-name (update ::rebu/accounts
-                                     (partial set/join #{{::account/name account-name}})))]
+                                     (partial set/join #{{::account/name account-name}}))
+                category-name (update ::rebu/categories
+                                     (partial set/join #{{::category/name category-name}}))
+                budget-name  (update ::rebu/budgets
+                                     (partial set/join #{{::budget/name budget-name}})))
+        state (assoc state ::rebu/entries
+                     (reduce set/join
+                             [(::rebu/entries state)
+                              (::rebu/categories state)
+                              (::rebu/budgets state)
+                              (::rebu/accounts state)]))]
     (-> state
         (update ::rebu/entries (partial sort-by ::entry/when))
         (update ::rebu/accounts (partial sort-by ::account/created-at))

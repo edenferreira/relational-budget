@@ -147,6 +147,7 @@
        (create-as-of-filter :as-of as-of)
        (map :form/html
             (set.ext/extend
+                ;; JOIN with attributes for the type
              filters
               :form/html
               (fn [{::rwd/keys [attribute]}]

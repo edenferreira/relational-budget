@@ -28,3 +28,4 @@
 - [] create assignment entity that assignes to categories
 - [] create money movement entity that moves money between categories
 - [] integrity assignment, category has to exist
+- [] improve state to view contract to allow sorting
