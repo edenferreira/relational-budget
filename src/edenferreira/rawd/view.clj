@@ -2,6 +2,7 @@
   (:require [edenferreira.rawd :as-alias rwd]
             [clojure.set :as set]
             [edenferreira.clojure.set.extensions :as set.ext]
+            [edenferreira.rawd.derived-relations :as rawd.rels]
             [clojure.string :as string]
             [clojure.alpha.spec :as s]))
 
@@ -75,22 +76,6 @@
                            :margin-bottom "8px")}
     button-label]])
 
-(defn create-input-html
-  [{:input/keys [id form label name type]
-    ::rwd/keys [select-options]}]
-  (case type
-    "select"
-    (create-select-input :id id
-                         :form form
-                         :label label
-                         :name name
-                         :options select-options)
-    (create-input :id id
-                  :form form
-                  :type type
-                  :label label
-                  :name name)))
-
 (defn create-form-html
   [{:form/keys [id enctype method action button-label items]}]
   (create-form
@@ -102,27 +87,22 @@
    :button-label button-label))
 
 (defn entities->forms [entities attributes]
-  (let [entities (set.ext/extend entities
-                   :form/id (comp (partial str "form") name ::rwd/entity)
-                   :form/enctype (constantly "application/x-www-form-urlencoded")
-                   :form/method (constantly "POST")
-                   :form/action (comp #(str "/" % "/create") name ::rwd/entity)
-                   :form/button-label (comp (partial str "Create ") name ::rwd/entity))
-        attributes (set.ext/extend attributes
-                     :input/id (comp name ::rwd/attribute)
-                     :input/label (comp #(string/replace % "-" " ") name ::rwd/attribute)
-                     :input/name (comp name ::rwd/attribute)
-                     :input/type ::rwd/type)]
-    (-> (set/join entities attributes)
-        (set.ext/extend :input/form :form/id)
-        (set.ext/extend :input/html create-input-html)
-        (set.ext/summarize [:form/id
-                            :form/enctype
-                            :form/method
-                            :form/action
-                            :form/button-label]
-                           :form/items (partial map :input/html))
-        (set.ext/extend :form/html create-form-html))))
+  (-> (rawd.rels/entities-and-attributes-inputs-html
+       entities
+       attributes)
+      (set.ext/extend :input/html
+        (fn [{:input/keys [type parameters]}]
+          (case type
+            "select"
+            (create-select-input parameters)
+            (create-input parameters))))
+      (set.ext/summarize [:form/id
+                          :form/enctype
+                          :form/method
+                          :form/action
+                          :form/button-label]
+                         :form/items (partial map :input/html))
+      (set.ext/extend :form/html create-form-html)))
 
 (defn index [& {:keys [as-of state]
                 ::rwd/keys [entities attributes]}]

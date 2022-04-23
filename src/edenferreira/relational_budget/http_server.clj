@@ -222,20 +222,20 @@
   (start-dev))
 
 (comment
-  (get-state!
-   :as-of (instant/parse "1999-01-03T02:00:00Z"))
-(instant/parse "2000-01-03T02:00:00Z")
-(do
-  (require 'edev)
-  (edev/e-la-vamos-nos)
-  (def p (portal/open))
-  (start-dev))
+  (get-state! :as-of (instant/parse "1999-01-03T02:00:00Z"))
+
+  (do
+    (require 'edev)
+    (edev/e-la-vamos-nos)
+    (def p (portal/open))
+    (start-dev))
+
   (do
     (portal/clear)
     (restart))
+
   (edenferreira.rawd.view/entities->forms2
    (::rwd/entities definition)
    (::rwd/attributes definition)
    )
-  (rawd/entities->forms entities)
-  (route/try-routing-for routes :prefix-tree "/greet" :get))
+  '_)
