@@ -13,6 +13,7 @@
     {k
      (reduce f init rels)}))
 
+;; TODO safe option that break without type
 (defn updated-balance-from-entry
   [balance {::entry/keys [amount type]}]
   (if type

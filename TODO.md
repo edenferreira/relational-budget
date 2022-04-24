@@ -29,3 +29,4 @@
 - [] create money movement entity that moves money between categories
 - [] integrity assignment, category has to exist
 - [] improve state to view contract to allow sorting
+- [] other-party be a thing itself that can have its own relation isntead of being just an attr in entry

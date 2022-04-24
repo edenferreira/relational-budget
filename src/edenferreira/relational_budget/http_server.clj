@@ -157,6 +157,7 @@
 
 (def content-neg-intc (conneg/negotiate-content supported-types))
 
+;; TODO move to an adapter namespace
 (def coerce-body
   {:name ::coerce-body
    :leave
@@ -235,6 +236,10 @@
                ::rebu/entries-balances-by-days
                (sort-by ::entry/day
                         (derived-rels/entries-balances-by-days
+                         (::rebu/entries state)))
+               ::rebu/other-parties-amount-expended
+               (sort-by ::entry/other-party
+                        (derived-rels/other-parties-amount-expended
                          (::rebu/entries state)))))))
 
 (def routes

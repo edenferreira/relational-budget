@@ -8,6 +8,7 @@
             [br.com.relational-budget.account :as-alias account]
             [br.com.relational-budget.assignment :as-alias assignment]
             [br.com.relational-budget.entry :as-alias entry]
+            [br.com.relational-budget.other-party :as-alias other-party]
             [edenferreira.relational-budget.derived-relations :as derived-relations]
             [clojure.test.check :as test.check]
             [clojure.test.check.properties :as prop]
@@ -17,7 +18,7 @@
             [edenferreira.clojure.set.extensions :as set.ext]
             [clojure.alpha.spec :as s]
             [clojure.alpha.spec.test :as stest]
-            )
+            [matcher-combinators.matchers :as m])
   (:import [java.time Instant]))
 
 (t/use-fixtures :once #(do (stest/instrument) (%) (stest/unstrument)))
@@ -182,6 +183,39 @@
             #::entry{:amount 200M
                      :type ::entry/credit
                      ::budget/name "budget name"}})))))
+
+(deftest other-parties-amount-expended
+  (is (match? #{}
+              (derived-relations/other-parties-amount-expended #{})))
+
+  (is (match? #{(m/equals {::other-party/expended 10M
+                           ::entry/other-party "merchant"})}
+              (derived-relations/other-parties-amount-expended
+               #{{::entry/amount 10M
+                  ::entry/type ::entry/credit
+                  ::entry/other-party "merchant"}})))
+
+  (is (match? #{{::other-party/expended 0M
+                 ::entry/other-party "merchant"}}
+              (derived-relations/other-parties-amount-expended
+               #{{::entry/amount 10M
+                  ::entry/type ::entry/credit
+                  ::entry/other-party "merchant"}
+                 {::entry/amount 10M
+                  ::entry/type ::entry/debit
+                  ::entry/other-party "merchant"}})))
+
+  (is (match? #{{::other-party/expended 10M
+                 ::entry/other-party "merchant"}
+                {::other-party/expended -20M
+                 ::entry/other-party "other merchant"}}
+              (derived-relations/other-parties-amount-expended
+               #{{::entry/amount 10M
+                  ::entry/type ::entry/credit
+                  ::entry/other-party "merchant"}
+                 {::entry/amount 20M
+                  ::entry/type ::entry/debit
+                  ::entry/other-party "other merchant"}}))))
 
 (comment
   (clojure.test/run-tests)

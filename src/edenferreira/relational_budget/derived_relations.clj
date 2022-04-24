@@ -5,24 +5,23 @@
             [br.com.relational-budget.account :as-alias account]
             [br.com.relational-budget.assignment :as-alias assignment]
             [br.com.relational-budget.entry :as-alias entry]
+            [br.com.relational-budget.other-party :as-alias other-party]
             [clojure.set :as set]
             [edenferreira.relational-budget.logic :as logic]
             [edenferreira.clojure.set.extensions :as set.ext]))
 
 (defn accounts-with-balances [accounts entries]
-  (let [account-with-entries (set.ext/left-join accounts entries)]
-    (set.ext/project-away
-     (set.ext/extend (set.ext/summarize
-                      account-with-entries
-                      [::account/id
-                       ::account/name
-                       ::account/created-at
-                       ::account/initial-balance]
-                      ::account/balance
-                      #(reduce logic/updated-balance-from-entry 0M %))
-       ::account/balance #(+ (::account/balance %)
-                             (::account/initial-balance %)))
-     [::account/initial-balance])))
+  (set.ext/project-away
+   (set.ext/extend (set.ext/summarize
+                    (set.ext/left-join accounts entries)
+                    [::account/id
+                     ::account/name
+                     ::account/created-at
+                     ::account/initial-balance]
+                    ::account/balance #(reduce logic/updated-balance-from-entry 0M %))
+     ::account/balance #(+ (::account/balance %)
+                           (::account/initial-balance %)))
+   [::account/initial-balance]))
 
 
 (defn categories-with-initial-balance [categories assigments]
@@ -60,12 +59,6 @@
       ::budget/created-at]
      ::budget/balance #(reduce logic/updated-balance-from-entry 0M %))))
 
-(defn entries-on-days [days entries]
-  (set/join days
-            (set.ext/extend entries
-              ::entry/day
-              logic/entry-when->day)))
-
 (defn entries-balances-by-days [entries]
   (set.ext/summarize
    (set.ext/extend entries
@@ -90,6 +83,13 @@
      ::account/balance-for-the-day #(+ (::account/balance-for-the-day %)
                                        (::account/initial-balance %)))
      {::entry/day ::account/day}))
+
+(defn other-parties-amount-expended [entries]
+  (set.ext/project-away
+   (set.ext/summarize entries
+                      [::entry/other-party]
+                      ::other-party/expended #(- (reduce logic/updated-balance-from-entry 0M %)))
+   [::entry/amount]))
 
 (comment
   (accounts-with-balances
