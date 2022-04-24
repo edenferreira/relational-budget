@@ -15,7 +15,11 @@
             [edenferreira.relational-budget.main :as main]
             [edenferreira.relational-budget.derived-relations :as derived-rels]
             [clojure.set :as set]
-            [edenferreira.rawd.instant :as instant])
+            [hiccup.page :as h.page]
+            [hiccup.core :as h]
+            [edenferreira.rawd.instant :as instant]
+            [clojure.string :as string]
+            [edenferreira.rawd.view :as view])
   (:import [java.time Instant]))
 
 (defn make-handler-catch-invalid-state [f]
@@ -23,9 +27,32 @@
     (try
       {:status 200
        :body (f input)}
-      (catch java.lang.IllegalStateException _e
-        {:status 400
-         :body {:invalid-input input}}))))
+      (catch clojure.lang.ExceptionInfo e
+        (if-some [fails (:edenferreira.relational-budget.main/failures (ex-data e))]
+          {:status 400
+           :body
+           (h.page/html5
+            {}
+            (h/html
+             [:head [:title "ERROR"]
+              [:link {:rel "stylesheet"
+                      :href "https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css"
+                      :integrity "sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3"
+                      :crossorigin "anonymous"}]]
+             [:body
+              [:div {:class "container"}
+               [:div {:class "row"}
+                [:div {:class "jumbotron jumbotron-fluid"}
+                 [:div {:class "container"}
+                  [:h2 {:class "display-4 text-danger"} "Invalid Input"]
+                  (view/rels->table #{input})]]]
+               [:div {:class "row"}
+                (map #(-> %
+                          (string/replace "/" ": ")
+                          (string/replace "-" " ")
+                          (->> (vector :span {:class "alert alert-danger"})))
+                     fails)]]]))}
+          (throw e))))))
 
 (def definition
   {::rwd/entities
@@ -175,9 +202,9 @@
         state (assoc state ::rebu/entries
                      (reduce set/join
                              [(::rebu/entries state)
-                              (::rebu/categories state)
-                              (::rebu/budgets state)
-                              (::rebu/accounts state)]))]
+                              (set/project (::rebu/categories state) [::category/name])
+                              (set/project (::rebu/budgets state) [::budget/name])
+                              (set/project (::rebu/accounts state) [::account/name])]))]
     (-> state
         (update ::rebu/entries (partial sort-by ::entry/when))
         (update ::rebu/accounts (partial sort-by ::account/created-at))

@@ -11,17 +11,39 @@
 (defonce db
   (atom {}))
 
+(def integrity
+  [integrity/entry-must-have-existing-account
+   integrity/entry-must-have-existing-category
+   integrity/entry-must-have-existing-budget
+   integrity/budget-name-must-be-unique
+   integrity/category-name-must-be-unique
+   integrity/account-name-must-be-unique])
+
+(defn build-validate-integrity! [integrity]
+  (fn [state]
+    (let [result (reduce
+                  (fn [agg f]
+                    (if (f state)
+                      (update agg ::success conj f)
+                      (update agg ::fail conj f)))
+                  {::success []
+                   ::fail []}
+                  integrity)]
+      (if (seq (::fail result))
+        (let [failed-fn-names (map #((requiring-resolve `clojure.main/demunge)
+                                     (-> %
+                                         .getClass
+                                         .getSimpleName))
+                                   (::fail result))]
+          (throw (ex-info "Integrity failures"
+                          {::failures failed-fn-names})))
+        true))))
+
 ;; The db is def only once but the validator
 ;; is always set again to allow for fater
 ;; feedback cycles
 (set-validator! db
-                (every-pred
-                 integrity/entry-must-have-existing-account
-                 integrity/entry-must-have-existing-category
-                 integrity/entry-must-have-existing-budget
-                 integrity/budget-name-must-be-unique
-                 integrity/category-name-must-be-unique
-                 integrity/account-name-must-be-unique))
+                (build-validate-integrity! integrity))
 
 (defn create-budget [& {:as m}]
   (swap! db api/create-budget m))
@@ -43,6 +65,16 @@
   (swap! db empty)
   (require '[edenferreira.rawd.persistence :as rawd.persitence]
            '[edenferreira.rawd.instant :as instant])
+
+(add-entry
+     :id (random-uuid)
+     :type ::entry/credit
+     :amount 100M
+     :other-party "merchant"
+     :budget "some budget not exist"
+     :category "category name not exist"
+     :account "account name not exist"
+     :as-of (instant/parse "2000-01-01T00:00:00Z"))
   (do
     (create-budget
      :id (random-uuid)
@@ -77,3 +109,12 @@
            path))
   @main/db
   '_)
+
+(comment
+  (def v (validate! [(fn abc [& _] false)]))
+  (v {:a :B})
+  (keys (bean (:class (bean (first integrity)))))
+  ((requiring-resolve `clojure.main/demunge)
+   (:simpleName (bean (:class (bean (first integrity))))))
+
+  (keys (a integrity)))

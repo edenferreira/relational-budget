@@ -8,27 +8,24 @@
 
 (defn entry-must-have-existing-account
   [& {::rebu/keys [accounts entries]}]
-  (or (empty? entries)
-      (seq
-       (set/intersection
-        (set/project entries [::account/name])
-        (set/project accounts [::account/name])))))
+  (empty?
+   (set/difference
+    (set/project entries [::account/name])
+    (set/project accounts [::account/name]))))
 
 (defn entry-must-have-existing-category
   [& {::rebu/keys [categories entries]}]
-  (or (empty? entries)
-      (seq
-       (set/intersection
-        (set/project entries [::category/name])
-        (set/project categories [::category/name])))))
+  (empty?
+   (set/difference
+    (set/project entries [::category/name])
+    (set/project categories [::category/name]))))
 
 (defn entry-must-have-existing-budget
   [& {::rebu/keys [budgets entries]}]
-  (or (empty? entries)
-      (seq
-       (set/intersection
-        (set/project entries [::budget/name])
-        (set/project budgets [::budget/name])))))
+  (empty?
+   (set/difference
+    (set/project entries [::budget/name])
+    (set/project budgets [::budget/name]))))
 
 (defn budget-name-must-be-unique
   [& {::rebu/keys [budgets]}]

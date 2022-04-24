@@ -17,7 +17,13 @@
   (let [ks (-> rels first keys vec)]
     [:table {:class "table table-striped"}
      [:tr
-      (map #(do [:td %]) ks)]
+      (map #(do [:td
+                 (if-some [n (namespace %)]
+                   (str (-> n (string/split #"\.") last)
+                        " "
+                        (string/replace (name %) "-" " "))
+                   (string/replace (name %) "-" " "))])
+           ks)]
      (map (fn [rel]
             [:tr (map #(do [:td (get rel %)]) ks)])
           rels)]))
@@ -170,6 +176,6 @@
         :action "/"
         :button-label "Clear Filters")]]
      [:hr]
-     [:details
-      [:summary [:span {:class "h1"} "State"]]
+     [:div {:class "row"}
+      [:h1 {} "State"]
       (db->table state)]]]))

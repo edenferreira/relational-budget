@@ -114,6 +114,7 @@
          :as-of as-of))))
 
 (comment
+  (start!)
 
 
   ;; template

@@ -52,25 +52,23 @@
         handled))))
 
 (defn entities-routes [interceptors entities]
-  (set
-   (map :route/route
-        (set.ext/extend
-         (set.ext/extend
-          entities
-           :route/uri (comp #(str "/" % "/create") name ::rwd/entity)
-           :route/handler (fn [{::rwd/keys [entity adapter handler]
-                                :or {adapter identity
-                                     handler identity}}]
-                            (respond-create-entity entity adapter handler))
-           :route/name (comp keyword
-                             (partial str "creating-entity-")
-                             name ::rwd/entity))
-          :route/route
-          (juxt :route/uri
-                (constantly :post)
-                (comp (partial conj interceptors) :route/handler)
-                (constantly :route-name)
-                :route/name)))))
+  (set.ext/extend
+   (set.ext/extend
+    entities
+     :route/uri (comp #(str "/" % "/create") name ::rwd/entity)
+     :route/handler (fn [{::rwd/keys [entity adapter handler]
+                          :or {adapter identity
+                               handler identity}}]
+                      (respond-create-entity entity adapter handler))
+     :route/name (comp keyword
+                       (partial str "creating-entity-")
+                       name ::rwd/entity))
+    :route/route
+    (juxt :route/uri
+          (constantly :post)
+          (comp (partial conj interceptors) :route/handler)
+          (constantly :route-name)
+          :route/name)))
 
 (def as-of-interceptor
   {:enter (fn [context]
