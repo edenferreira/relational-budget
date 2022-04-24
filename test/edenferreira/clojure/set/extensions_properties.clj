@@ -7,16 +7,21 @@
             [clojure.test.check :as test.check]
             [clojure.set :as set]))
 
+(def rel-generator
+  (gen/bind
+   (gen/tuple (gen/vector-distinct gen/keyword
+                                   {:min-elements 5
+                                    :max-elements 15})
+              (gen/vector gen/simple-type-printable-equatable 150))
+   (fn [[ks vs]]
+     (gen/set
+      (apply gen/hash-map
+             (mapcat #(do [% (gen/elements vs)])
+                     ks))))))
+
 (def left-join-itself-is-itself
   (prop/for-all
-   [rels (gen/bind
-          (gen/tuple (gen/vector gen/keyword 5)
-                     (gen/vector gen/simple-type-printable-equatable 150))
-          (fn [[ks vs]]
-            (gen/set
-             (apply gen/hash-map
-                    (mapcat #(do [% (gen/elements vs)])
-                            ks)))))]
+   [rels rel-generator]
    (= rels (set.ext/left-join rels rels))))
 
 (deftest check-left-join-itself-is-itself
@@ -28,14 +33,7 @@
 
 (def left-join-empty-set-is-itself
   (prop/for-all
-   [rels (gen/bind
-          (gen/tuple (gen/vector gen/keyword 5)
-                     (gen/vector gen/simple-type-printable-equatable 150))
-          (fn [[ks vs]]
-            (gen/set
-             (apply gen/hash-map
-                    (mapcat #(do [% (gen/elements vs)])
-                            ks)))))]
+   [rels rel-generator]
    (= rels (set.ext/left-join rels #{}))))
 
 (deftest check-left-join-empty-set-is-itself
@@ -49,14 +47,7 @@
 ;; from left-join
 (def join-empty-set-is-empty-set
   (prop/for-all
-   [rels (gen/bind
-          (gen/tuple (gen/vector gen/keyword 5)
-                     (gen/vector gen/simple-type-printable-equatable 150))
-          (fn [[ks vs]]
-            (gen/set
-             (apply gen/hash-map
-                    (mapcat #(do [% (gen/elements vs)])
-                            ks)))))]
+   [rels rel-generator]
    (= #{} (set/join rels #{}))))
 
 (deftest check-join-empty-set-is-empty-set
@@ -67,5 +58,7 @@
             join-empty-set-is-empty-set))))
 
 (comment
+  (gen/generate left-join-different-rels-is-union)
+
   (clojure.test/run-tests)
   '_)
