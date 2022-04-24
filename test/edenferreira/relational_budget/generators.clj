@@ -10,16 +10,16 @@
             [clojure.alpha.spec :as s]))
 
 (defn one-account []
-  (s/gen (s/select ::rebu/account [*])))
+  (s/gen ::rebu/account))
 
 (defn one-category []
-  (s/gen (s/select ::rebu/category [*])))
+  (s/gen ::rebu/category))
 
 (defn one-budget []
-  (s/gen (s/select ::rebu/budget [*])))
+  (s/gen ::rebu/budget))
 
 (defn one-entry []
-  (s/gen (s/select ::rebu/entry [*])))
+  (s/gen ::rebu/entry))
 
 (defn one-entry-with-specific-type [type]
   (gen/fmap #(assoc % ::entry/type type) (one-entry)))
