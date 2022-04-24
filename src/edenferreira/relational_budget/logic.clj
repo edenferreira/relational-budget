@@ -22,9 +22,15 @@
      ::entry/debit (+ balance amount))
     balance))
 
+(defn balance-from-entries [rels]
+  (reduce updated-balance-from-entry 0M rels))
+
 (defn updated-balance-from-assignment [sum {::assignment/keys [amount]
                                             :or {amount 0M}}]
   (+ sum amount))
+
+(defn balance-from-assignments [rels]
+  (reduce updated-balance-from-assignment 0M rels))
 
 (defn entry-when->day [{::entry/keys [when]}]
   (.truncatedTo ^Instant when ChronoUnit/DAYS))

@@ -18,7 +18,7 @@
                      ::account/name
                      ::account/created-at
                      ::account/initial-balance]
-                    ::account/balance #(reduce logic/updated-balance-from-entry 0M %))
+                    ::account/balance logic/balance-from-entries)
      ::account/balance #(+ (::account/balance %)
                            (::account/initial-balance %)))
    [::account/initial-balance]))
@@ -30,8 +30,7 @@
    [::category/id
     ::category/name
     ::category/created-at]
-   ::category/balance
-   #(reduce logic/updated-balance-from-assignment 0M %)))
+   ::category/balance logic/balance-from-assignments))
 
 (defn categories-with-balances [categories assignments entries]
   (let [categories-with-entries (set.ext/left-join
@@ -45,7 +44,7 @@
            ::category/name
            ::category/created-at
            ::category/balance]
-          ::category/entry-balance #(reduce logic/updated-balance-from-entry 0M %))
+          ::category/entry-balance logic/balance-from-entries)
        ::category/balance #(+ (::category/balance %)
                               (::category/entry-balance %)))
      [::category/entry-balance])))
@@ -57,7 +56,7 @@
      [::budget/id
       ::budget/name
       ::budget/created-at]
-     ::budget/balance #(reduce logic/updated-balance-from-entry 0M %))))
+     ::budget/balance logic/balance-from-entries)))
 
 (defn entries-balances-by-days [entries]
   (set.ext/summarize
@@ -66,7 +65,7 @@
      logic/entry-when->day)
    [::entry/day
     ::budget/name]
-   :day/balance #(reduce logic/updated-balance-from-entry 0M %)))
+   :day/balance logic/balance-from-entries))
 
 (defn accounts-balances-by-days [accounts entries]
   (set/rename
@@ -79,7 +78,7 @@
          ::account/initial-balance
          ::account/name
          ::budget/name]
-        ::account/balance-for-the-day #(reduce logic/updated-balance-from-entry 0M %))
+        ::account/balance-for-the-day logic/balance-from-entries)
      ::account/balance-for-the-day #(+ (::account/balance-for-the-day %)
                                        (::account/initial-balance %)))
      {::entry/day ::account/day}))
@@ -88,7 +87,7 @@
   (set.ext/project-away
    (set.ext/summarize entries
                       [::entry/other-party]
-                      ::other-party/expended #(- (reduce logic/updated-balance-from-entry 0M %)))
+                      ::other-party/expended (comp - logic/balance-from-entries))
    [::entry/amount]))
 
 (comment
